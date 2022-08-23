@@ -1,0 +1,6 @@
+#!/bin/sh
+
+case $1 in
+    pre)  /opt/batterylog/batterylog.py suspend ;;
+    post) /opt/batterylog.py resume ;;
+esac
