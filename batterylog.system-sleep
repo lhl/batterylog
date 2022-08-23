@@ -2,5 +2,5 @@
 
 case $1 in
     pre)  /opt/batterylog/batterylog.py suspend ;;
-    post) /opt/batterylog.py resume ;;
+    post) /opt/batterylog/batterylog.py resume ;;
 esac
