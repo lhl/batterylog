@@ -79,7 +79,7 @@ except:
     delta_s = resume['time'] - suspend['time']
     delta_h = Decimal(delta_s/3600)
 
-    # Get Power Used
+    # Get Power Used - we use now vs min since that's more accurate
     power_used_wh = Decimal((suspend['power_now'] - resume['power_now'])/1000000000000)
 
     # Average Energy Use
@@ -96,4 +96,4 @@ except:
 
     print('Slept for {:.2f} hours'.format(delta_h))
     print('Used {:.2f} Wh, an average rate of {:.2f} W'.format(power_used_wh, energy_use_w))
-    print('Sleep power consumption rate: {:.2f}% / hr or {:.2f}% / day'.format(percent_per_h, percent_per_h*24))
+    print('For your {:.2f} Wh battery this is {:.2f}%/hr or {:.2f}%/day'.format(power_full_wh, percent_per_h, percent_per_h*24))
