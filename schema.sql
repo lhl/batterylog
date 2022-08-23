@@ -1,4 +1,4 @@
-CREATE TABLE "log" (
+CREATE TABLE IF NOT EXISTS "log" (
 	"time"	INTEGER,
 	"name"	TEXT,
         "event" TEXT,
