@@ -1,11 +1,12 @@
 #!/usr/bin/python
 
 from   decimal import Decimal
+import os
 import sqlite3
 import sys
 import time
 
-DB_PATH = 'batterylog.db'
+DB_PATH = os.path.dirname(__file__) + '/batterylog.db'
 
 # This is used for logging
 try:
