@@ -5,6 +5,21 @@ A simple Python app with few dependencies that reads your sysfs-class-power numb
 
 It was built to track suspend power usage for Framework laptops, but is flexible/easily extensible to do all kinds of other stuff.
 
+
+# Running
+Makes sure you meet the requirements, clone the repo, and run `INSTALL.sh` - this will move the cloned repo to `/opt/batterylog` and install the script that logs into a sqlite3 DB at `/opt/batterylog/batterylog.db`.
+
+You can run `/opt/batterylog/batterylog` without any parameters and it will calculate the power usage from the last suspend/resume cycle:
+
+```
+$ /opt/batterylog/batterylog
+Slept for 8.72 hours
+Used 6.10 Wh, an average rate of 0.70 W
+For your 53.67 Wh battery this is 1.30%/hr or 31.29%/day
+```
+
+Right now there's some stuff that's hard-coded (like BAT1) for Framework that might need to change (eg, BAT0) - also, the script doesn't check that all values exist (some batteries don't report some values) and it probably should as well...
+
 # Requirements
 * sysfs-class-power (`/sys/class/power_supply`)
 * systemd
