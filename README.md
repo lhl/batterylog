@@ -18,7 +18,7 @@ Used 6.10 Wh, an average rate of 0.70 W
 For your 53.67 Wh battery this is 1.30%/hr or 31.29%/day
 ```
 
-The current release might work OOTB if you have a Framework, but right now there's some stuff that's hard-coded (like BAT1) that might not work for a different laptop. Also, the script doesn't check that all values exist (some batteries don't report some values) and it probably should as well. And while it store and keeps all historical values in sqlite, it doesn't really do much else, like have a UI for exposing previous sleeps, etc. 
+This script should work w/ any laptop that has a battery available via `sysfs` (it looks for the first battery located by `/sys/class/power_supply/BAT*`). This script has currently only been tested with a Framework laptop and the script doesn't check that all values exist (some batteries don't report some values). It's small enough though that it should be easy to debug/modify for your own purposes. Also, while it stores and keeps all historical values in sqlite, it doesn't really do much else, like have a UI for exposing previous sleeps, etc yet.
 
 The expectation for this release is that the user would be comfortable writing some of their own queries or scripts if they want to do more.
 

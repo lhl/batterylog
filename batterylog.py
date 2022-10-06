@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 from   decimal import Decimal
+import glob
 import os
 import sqlite3
 import sys
@@ -23,25 +24,36 @@ with open(SCHEMA_FILE) as f:
 # This is used for logging
 try:
     event = sys.argv[1]
+except:
+    event = None
 
-    # TODO: battery name/listing/path
-    name = 'BAT1'
+# We write if there's an event being passed
+if event:
+    # We only handle a single battery, but this should work fine for most laptops
+    batteries = glob.glob('/sys/class/power_supply/BAT*')
+    if batteries:
+        BAT = batteries[0]
+        name = os.path.basename(BAT)
+    else:
+        print('Sorry we couldn\'t find a battery in /sys/class/power_supply')
+        sys.exit()
 
+    # Timestamp
     now = int(time.time())
 
-    with open('/sys/class/power_supply/BAT1/cycle_count') as f:
+    with open(BAT + '/cycle_count') as f:
         cycle_count = int(f.read())
 
-    with open('/sys/class/power_supply/BAT1/charge_now') as f:
+    with open(BAT + '/charge_now') as f:
         charge_now = int(f.read())
 
-    with open('/sys/class/power_supply/BAT1/current_now') as f:
+    with open(BAT + '/current_now') as f:
         current_now = int(f.read())
 
-    with open('/sys/class/power_supply/BAT1/voltage_now') as f:
+    with open(BAT + '/voltage_now') as f:
         voltage_now = int(f.read())
 
-    with open('/sys/class/power_supply/BAT1/voltage_min_design') as f:
+    with open(BAT + '/voltage_min_design') as f:
         voltage_min_design = int(f.read())
 
     # Energy = Wh
@@ -61,8 +73,8 @@ try:
     con.commit()
     con.close()
 
-# This can be run for reporting
-except:
+# No event specified, we'll just do reporting
+else:
     # No argument - print last stats
     con = sqlite3.connect(DB_FILE)
     con.row_factory = sqlite3.Row
