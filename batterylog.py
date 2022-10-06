@@ -6,7 +6,19 @@ import sqlite3
 import sys
 import time
 
-DB_PATH = os.path.dirname(__file__) + '/batterylog.db'
+# Paths
+APP_DIR = os.path.dirname(__file__)
+SCHEMA_FILE = APP_DIR + '/schema.sql'
+DB_FILE = APP_DIR + '/batterylog.db'
+
+# Connect to DB
+con = sqlite3.connect(DB_FILE)
+con.row_factory = sqlite3.Row
+cur = con.cursor()
+
+# Load schema if necessary - we use IF NOT EXISTS so this if fine to run for sanity checking
+with open(SCHEMA_FILE) as f:
+    cur.executescript(f.read())
 
 # This is used for logging
 try:
@@ -41,7 +53,7 @@ try:
     power_min = current_now * voltage_min_design
 
     # Write to DB
-    con = sqlite3.connect(DB_PATH)
+    con = sqlite3.connect(DB_FILE)
     cur = con.cursor()
     sql = "INSERT INTO log VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
     values = (now, name, event, cycle_count, charge_now, current_now, voltage_now, voltage_min_design, energy_now, energy_min, power_now, power_min)
@@ -52,7 +64,7 @@ try:
 # This can be run for reporting
 except:
     # No argument - print last stats
-    con = sqlite3.connect(DB_PATH)
+    con = sqlite3.connect(DB_FILE)
     con.row_factory = sqlite3.Row
     cur = con.cursor()
 
