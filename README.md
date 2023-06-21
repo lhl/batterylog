@@ -28,6 +28,9 @@ The expectation for this release is that the user would be comfortable writing s
 * python3
 * sqlite3
 
+# Packaging
+* Arch Linux AUR: [batterylog-git](https://aur.archlinux.org/packages/batterylog-git) packaged by [Stetsed](https://github.com/Stetsed)
+
 ## Other Related Tools
 * [powertop](https://github.com/fenrus75/powertop) - power usage realtime monitoring swiss army knife; can export reports
 * [powerstat](https://github.com/ColinIanKing/powerstat) - most useful tool for measuring idle power usage; generates vmstat-style output and TUI histograms
