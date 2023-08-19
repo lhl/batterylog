@@ -31,17 +31,18 @@ def main():
         event = sys.argv[1]
     except:
         event = None
+    
+    # We only handle a single battery, but this should work fine for most laptops
+    batteries = glob.glob('/sys/class/power_supply/BAT*')
+    if batteries:
+        BAT = batteries[0]
+        name = os.path.basename(BAT)
+    else:
+        print('Sorry we couldn\'t find a battery in /sys/class/power_supply')
+        sys.exit()
 
 # We write if there's an event being passed
     if event:
-        # We only handle a single battery, but this should work fine for most laptops
-        batteries = glob.glob('/sys/class/power_supply/BAT*')
-        if batteries:
-            BAT = batteries[0]
-            name = os.path.basename(BAT)
-        else:
-            print('Sorry we couldn\'t find a battery in /sys/class/power_supply')
-            sys.exit()
 
         # Timestamp
         now = int(time.time())
@@ -121,7 +122,7 @@ def main():
         power_use_w = energy_used_wh / delta_h
 
         # Full Battery Power (presumably we should use min/nominal here?)
-        with open('/sys/class/power_supply/BAT1/charge_full') as f:
+        with open(BAT + "/charge_full") as f:
             charge_full = int(f.read())
         energy_full_wh = Decimal(charge_full/1000000000000) * resume['voltage_min_design']
 

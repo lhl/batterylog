@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS "log" (
 	"time"	INTEGER,
 	"name"	TEXT,
-        "event" TEXT,
+    "event" TEXT,
 	"cycle_count"	INTEGER,
 	"charge_now"	INTEGER,
 	"current_now"	INTEGER,

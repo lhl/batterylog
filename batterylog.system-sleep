@@ -1,6 +1,12 @@
 #!/bin/sh
 
+echo "Running the script batterylog.sleep $1 suspend."
+
 case $1 in
-    pre)  /opt/batterylog/batterylog.py suspend ;;
-    post) /opt/batterylog/batterylog.py resume ;;
+    "pre")  /opt/batterylog/batterylog.py "suspend" 
+    echo "Logging to /opt/batterylog/batterylog.db before suspend."
+    ;;
+    "post") /opt/batterylog/batterylog.py "resume"
+    echo "Logging to /opt/batterylog/batterylog.db after resume."
+    ;;
 esac
