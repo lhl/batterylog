@@ -6,7 +6,7 @@ from batterylog.cli import main
 def test_cli_install_hook_dispatches_to_hook_manager(monkeypatch, tmp_path):
     captured = {}
 
-    def fake_install_hook(db_path, *, hook_command=None, system_config_path=None, system_hook_path=None):
+    def fake_install_hook(db_path, *, hook_command=None):
         captured["db_path"] = db_path
         captured["hook_command"] = hook_command
         return 0
@@ -31,7 +31,7 @@ def test_cli_install_hook_dispatches_to_hook_manager(monkeypatch, tmp_path):
 def test_cli_uninstall_hook_dispatches_to_hook_manager(monkeypatch):
     called = {"count": 0}
 
-    def fake_uninstall_hook(*, system_config_path=None, system_hook_path=None):
+    def fake_uninstall_hook():
         called["count"] += 1
         return 0
 

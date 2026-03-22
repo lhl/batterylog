@@ -60,10 +60,12 @@ def report_last_cycle(db_path: Path) -> int:
         """
         SELECT * FROM log
         WHERE event = 'suspend'
+        AND time <= ?
         ORDER BY time DESC
         LIMIT 1
-        """
-    ).fetchone()
+        """,
+        (resume["time"],),
+    ).fetchone() if resume is not None else None
 
     connection.close()
 
@@ -72,20 +74,24 @@ def report_last_cycle(db_path: Path) -> int:
         return 0
 
     delta_s = resume["time"] - suspend["time"]
-    delta_h = Decimal(delta_s / 3600)
-    energy_used_wh = Decimal((suspend["energy_min"] - resume["energy_min"]) / 1000000000000)
+    if delta_s <= 0:
+        print(NO_DATA_MESSAGE)
+        return 0
+
+    delta_h = Decimal(delta_s) / Decimal(3600)
+    energy_used_wh = Decimal(suspend["energy_min"] - resume["energy_min"]) / Decimal(1000000000000)
     power_use_w = energy_used_wh / delta_h
 
     charge_full = read_charge_full(resume["name"])
-    energy_full_wh = Decimal(charge_full / 1000000000000) * resume["voltage_min_design"]
+    energy_full_wh = Decimal(charge_full) / Decimal(1000000000000) * Decimal(resume["voltage_min_design"])
     percent_per_h = 100 * power_use_w / energy_full_wh
 
     print("Slept for {:.2f} hours".format(delta_h))
     print("Used {:.2f} Wh, an average rate of {:.2f} W".format(energy_used_wh, power_use_w))
 
     if power_use_w > 0:
-        until_empty_h = Decimal(resume["energy_min"] / 1000000000000) / power_use_w
-        print("At {:.2f}/Wh drain you battery would be empty in {:.2f} hours".format(power_use_w, until_empty_h))
+        until_empty_h = Decimal(resume["energy_min"]) / Decimal(1000000000000) / power_use_w
+        print("At {:.2f} W drain your battery would be empty in {:.2f} hours".format(power_use_w, until_empty_h))
 
     print(
         "For your {:.2f} Wh battery this is {:.2f}%/hr or {:.2f}%/day".format(

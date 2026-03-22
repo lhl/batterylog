@@ -2,6 +2,7 @@ import os
 import shlex
 import shutil
 import sys
+import tempfile
 from pathlib import Path
 
 from batterylog.db import connect_database
@@ -27,9 +28,13 @@ def install_hook(
     command_path = resolve_hook_command_path(hook_command)
     ensure_stable_hook_command(command_path)
 
-    write_config(system_config_path, active_db_path)
     initialize_hook_database(active_db_path)
-    write_hook(system_hook_path, command_path, active_db_path)
+    install_managed_files(
+        system_config_path,
+        render_config(active_db_path),
+        system_hook_path,
+        render_hook(command_path, active_db_path),
+    )
 
     print(f"Installed hook at {system_hook_path}")
     print(f"Configured database at {active_db_path}")
@@ -41,11 +46,11 @@ def uninstall_hook(
     system_config_path: Path = SYSTEM_CONFIG_PATH,
     system_hook_path: Path = SYSTEM_HOOK_PATH,
 ) -> int:
-    remove_file_if_exists(system_hook_path)
-    remove_file_if_exists(system_config_path)
+    hook_removed = unlink_if_exists(system_hook_path)
+    config_removed = unlink_if_exists(system_config_path)
 
-    print(f"Removed hook at {system_hook_path}")
-    print(f"Removed config at {system_config_path}")
+    print(status_message("hook", system_hook_path, hook_removed))
+    print(status_message("config", system_config_path, config_removed))
     return 0
 
 
@@ -93,28 +98,50 @@ def ensure_stable_hook_command(command_path: Path) -> None:
 
 
 def initialize_hook_database(db_path: Path) -> None:
-    ensure_directory(db_path.parent, mode=0o755)
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    db_path.parent.chmod(0o755)
     connection = connect_database(db_path)
     connection.close()
     if db_path.exists():
         db_path.chmod(0o644)
 
 
-def write_config(config_path: Path, db_path: Path) -> None:
-    ensure_directory(config_path.parent, mode=0o755)
-    content = render_config(db_path)
-    write_text_file(config_path, content, mode=0o644)
+def install_managed_files(config_path: Path, config_content: str, hook_path: Path, hook_content: str) -> None:
+    config_snapshot = snapshot_file(config_path)
+    hook_snapshot = snapshot_file(hook_path)
+
+    try:
+        write_text_file_atomically(hook_path, hook_content, mode=0o755)
+        write_text_file_atomically(config_path, config_content, mode=0o644)
+    except OSError as exc:
+        rollback_error = rollback_managed_files(
+            config_path,
+            config_snapshot,
+            hook_path,
+            hook_snapshot,
+        )
+        if rollback_error is not None:
+            raise HookInstallError(
+                f"Failed to install managed hook files: {exc}. Rollback also failed: {rollback_error}"
+            ) from exc
+        raise HookInstallError(f"Failed to install managed hook files: {exc}") from exc
 
 
-def write_hook(hook_path: Path, command_path: Path, db_path: Path) -> None:
-    ensure_directory(hook_path.parent, mode=0o755)
-    content = render_hook(command_path, db_path)
-    write_text_file(hook_path, content, mode=0o755)
+def rollback_managed_files(
+    config_path: Path,
+    config_snapshot: tuple[str, int] | None,
+    hook_path: Path,
+    hook_snapshot: tuple[str, int] | None,
+) -> OSError | None:
+    errors = []
 
+    for path, snapshot in ((hook_path, hook_snapshot), (config_path, config_snapshot)):
+        try:
+            restore_file(path, snapshot)
+        except OSError as exc:
+            errors.append(exc)
 
-def ensure_directory(path: Path, *, mode: int) -> None:
-    path.mkdir(parents=True, exist_ok=True)
-    path.chmod(mode)
+    return errors[0] if errors else None
 
 
 def render_config(db_path: Path) -> str:
@@ -135,13 +162,54 @@ esac
 """.format(command=quoted_command, db_path=quoted_db_path)
 
 
-def write_text_file(path: Path, content: str, *, mode: int) -> None:
-    path.write_text(content)
-    path.chmod(mode)
+def write_text_file_atomically(path: Path, content: str, *, mode: int) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.parent.chmod(0o755)
+
+    temp_path: Path | None = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            "w",
+            dir=path.parent,
+            prefix=f".{path.name}.",
+            delete=False,
+        ) as handle:
+            handle.write(content)
+            temp_path = Path(handle.name)
+
+        temp_path.chmod(mode)
+        temp_path.replace(path)
+    finally:
+        if temp_path is not None and temp_path.exists():
+            temp_path.unlink()
 
 
-def remove_file_if_exists(path: Path) -> None:
+def snapshot_file(path: Path) -> tuple[str, int] | None:
+    if not path.exists():
+        return None
+
+    return (path.read_text(), path.stat().st_mode & 0o777)
+
+
+def restore_file(path: Path, snapshot: tuple[str, int] | None) -> None:
+    if snapshot is None:
+        unlink_if_exists(path)
+        return
+
+    content, mode = snapshot
+    write_text_file_atomically(path, content, mode=mode)
+
+
+def unlink_if_exists(path: Path) -> bool:
     try:
         path.unlink()
+        return True
     except FileNotFoundError:
-        pass
+        return False
+
+
+def status_message(kind: str, path: Path, removed: bool) -> str:
+    if removed:
+        return f"Removed {kind} at {path}"
+
+    return f"No {kind} installed at {path}"
