@@ -66,7 +66,7 @@ For changes that affect DB paths or schema, also confirm:
 
 1. an existing legacy DB can still be opened in place
 2. old or unversioned DBs transparently migrate in place when opened
-3. any explicit path-migration command creates a backup before mutating state
+3. any explicit path-migration command creates a `.bak` backup before mutating state and leaves it behind
 4. migrated DBs pass basic sqlite open/query checks
 5. row counts remain stable across a path migration
 6. rollback instructions are correct if verification fails

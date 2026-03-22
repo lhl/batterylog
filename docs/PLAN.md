@@ -115,6 +115,7 @@ See `docs/MIGRATION.md` for the detailed plan. The short version:
 - Legacy `/opt/batterylog/batterylog.db` installs remain supported in place.
 - Path moves must be explicit, backed up, and reversible.
 - Schema upgrades must be automatic, backed up, and reversible.
+- Migrations should leave a `.bak` file in place rather than deleting the backup automatically.
 
 ## Exit Criteria For The First PyPI Release
 

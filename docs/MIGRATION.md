@@ -51,7 +51,7 @@ For non-hook, user-local usage:
 
 - Never silently move an existing database.
 - Transparent in-place schema migration is preferred when the DB version is old or missing.
-- Never mutate an existing database in place without a backup path.
+- Never mutate an existing database in place without leaving a `.bak` backup behind.
 - Never make packaging changes depend on an immediate schema change.
 - Prefer additive schema changes over rewrites.
 - Keep old rows readable after schema upgrades.
@@ -91,7 +91,7 @@ Recommended behavior:
 
 1. validate source DB exists and is readable
 2. validate destination parent directory exists or can be created
-3. create a timestamped backup before making changes
+3. create a `.bak` backup before making changes and leave it in place
 4. copy data to the destination instead of moving first
 5. verify the copied DB opens and contains the expected schema
 6. leave the source DB untouched unless the user explicitly asks to retire it
@@ -138,8 +138,9 @@ Any DB migration command or schema migration path should follow this order:
    - confirm writable destination or backup location
    - confirm enough free space for a copied DB plus backup
 2. Backup
-   - create a timestamped backup before altering anything
+   - create a `.bak` backup before altering anything
    - preserve file ownership and mode where relevant
+   - leave the `.bak` file in place after success or failure
 3. Migration
    - run the copy or schema change
    - prefer copy-plus-verify over destructive move for path changes
@@ -158,7 +159,7 @@ Any DB migration command or schema migration path should follow this order:
 - Original legacy DB remains the source of truth until migration is verified.
 - Hook or config updates should happen after DB verification, not before.
 - If a migration partially succeeds, prefer reverting the hook/config pointer rather than trying to patch forward blindly.
-- Never delete backups during the same command that created them.
+- Never delete the `.bak` file during the same command that created it.
 - If an automatic schema migration fails, abort startup cleanly and leave the pre-migration backup available.
 
 ## Release Gate For Migration-Sensitive Changes
