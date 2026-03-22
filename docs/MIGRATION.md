@@ -16,8 +16,9 @@ Today, legacy installs behave like this:
 - code lives in `/opt/batterylog`
 - the sleep hook calls `/opt/batterylog/batterylog.py`
 - the database lives at `/opt/batterylog/batterylog.db`
-- startup now upgrades old or unversioned DBs in place to `PRAGMA user_version = 1`
+- startup now upgrades old or unversioned DBs in place to `PRAGMA user_version = 2`
 - automatic schema migration leaves `<db path>.bak` in place
+- schema version `2` adds charger-state columns while leaving older rows readable as `NULL`
 
 ## Target State
 
@@ -127,7 +128,7 @@ Notes:
 
 ### 3. Schema Migration
 
-Future features such as charger-state logging will need schema changes.
+Future features beyond the current charger-state columns may still need schema changes.
 
 Current mechanism:
 
@@ -137,7 +138,7 @@ Current mechanism:
 - support older DBs that only have the original `log` table columns
 - treat `user_version = 0` or missing version state as a valid upgrade input
 - define migration `1` as the current schema baseline with no table changes beyond setting `user_version = 1`
-- reserve later migrations such as charger-state columns for subsequent versions
+- define migration `2` as the additive charger-state migration
 
 Expected behavior:
 

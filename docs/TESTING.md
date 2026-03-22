@@ -23,11 +23,13 @@ On a development checkout:
 ```sh
 python3 batterylog.py
 python3 -c "import sys; sys.path.insert(0, 'src'); from batterylog.cli import main; raise SystemExit(main([]))"
+python3 -c "import sys; sys.path.insert(0, 'src'); from batterylog.cli import main; raise SystemExit(main(['history', '--limit', '5']))"
+python3 -c "import sys; sys.path.insert(0, 'src'); from batterylog.cli import main; raise SystemExit(main(['summary', '--limit', '5']))"
 ```
 
 Expected result on a fresh checkout: the script initializes `batterylog.db` locally and prints the "No power data available" message.
 
-Expected result on a machine with logged data: the script prints the last suspend/resume summary.
+Expected result on a machine with logged data: the script prints the last suspend/resume summary, and the additive `history` / `summary` commands return recent-cycle views.
 
 ### Suspend / Resume Logging
 
@@ -61,6 +63,7 @@ For changes that affect packaging, install paths, or CLI entry points, also conf
 2. `batterylog.py resume` still logs correctly for a legacy install.
 3. `batterylog.py` with no arguments still prints the last-cycle report.
 4. An existing `/opt/batterylog/batterylog.db` install is not silently moved or broken during upgrade.
+5. The legacy shim still writes to its sibling `batterylog.db` by default.
 
 ### Migration Checks
 
@@ -82,6 +85,14 @@ Once packaging exists, release validation should also confirm:
 3. persistent installs work via `pip`, `uv tool install`, and `pipx`
 4. an ephemeral `uvx` help or smoke path works for quick verification
 
+Preferred command:
+
+```sh
+python3 scripts/smoke_packaging.py
+```
+
+This runner uses isolated temp directories, bootstraps a temporary `pipx` when needed, and exercises build plus install smoke checks without touching your normal tool state.
+
 ### AUR Sanity Check
 
 For changes that affect install layout, legacy shims, or packaging:
@@ -98,6 +109,7 @@ For `migrate-db` or schema-version changes, also confirm:
 2. `<db path>.bak` is created and retained after automatic schema migration
 3. `batterylog migrate-db --from ... --to ...` leaves the source DB in place, may auto-upgrade it first, and writes a verified destination DB
 4. if migration verification fails, the original DB remains authoritative
+5. schema version `2` DBs expose the charger-state columns expected by the current code
 
 Note:
 
@@ -109,7 +121,7 @@ Note:
 - `schema.sql` changes: run the schema check and verify inserts/queries in `batterylog.py` still match.
 - `batterylog.py` changes: run `py_compile` plus the relevant manual smoke check.
 - `src/batterylog/*.py` changes: run `py_compile`, `pytest`, and the relevant source CLI smoke checks.
-- Packaging or release changes: run the checks listed in `docs/PUBLISH.md`.
+- Packaging or release changes: run the checks listed in `docs/PUBLISH.md`, including `python3 scripts/smoke_packaging.py`.
 - DB path or schema changes: run the migration checks from `docs/MIGRATION.md`.
 
 ## Reporting

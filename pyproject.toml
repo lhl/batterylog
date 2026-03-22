@@ -48,12 +48,15 @@ include = [
   "/README.md",
   "/LICENSE",
   "/docs",
+  "/scripts",
   "/pyproject.toml",
 ]
 
 [tool.uv]
 dev-dependencies = [
+  "build>=1,<2",
   "pytest>=8,<9",
+  "twine>=5,<7",
 ]
 
 [tool.pytest.ini_options]

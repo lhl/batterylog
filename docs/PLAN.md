@@ -36,9 +36,12 @@ It should also preserve compatibility for existing `INSTALL.sh` users instead of
 - A `pyproject.toml` and `src/batterylog/` package skeleton now exist, with `batterylog.py` retained as a legacy shim
 - The packaged CLI now supports `install-hook` and `uninstall-hook`, and `INSTALL.sh` delegates legacy hook setup to that managed path
 - Legacy installs still default to a DB beside the script, while packaged hook installs now default to `/var/lib/batterylog/batterylog.db`
-- The runtime now auto-upgrades old or unversioned DBs to schema version `1` with a retained `.bak` backup
+- The runtime now auto-upgrades old or unversioned DBs to schema version `2` with a retained `.bak` backup
 - `batterylog migrate-db --from ... --to ...` now exists for explicit path migration
-- Validation now includes a small pytest suite for CLI dispatch, migration logic, and hook-management filesystem behavior
+- The packaged CLI now supports `history` and `summary`, with `--discharging-only` filtering for recent-cycle views
+- Suspend and resume logging now records charger-state context via additive schema migration
+- Validation now includes a small pytest suite for CLI dispatch, migration logic, hook-management filesystem behavior, and legacy shim behavior
+- Packaging validation now includes `scripts/smoke_packaging.py` for build, `pip`, `uv tool install`, `pipx`, and `uvx` smoke checks
 
 ## Phase 1: Packaging Foundation
 
@@ -126,15 +129,15 @@ It should also preserve compatibility for existing `INSTALL.sh` users instead of
 
 ### Reporting
 
-- Change the last-cycle report so net-charge sessions are shown as battery gain instead of negative `Used X Wh`.
-- Add a `history` or `summary` mode for recent suspend sessions, with a filter for net-discharge cycles.
+- The last-cycle report now shows charging sessions as battery gain instead of negative `Used X Wh`.
+- `history` and `summary` now provide recent complete-cycle views, with a `--discharging-only` filter for net-discharge cycles.
 - Keep adjacent `suspend -> resume` pairing as the basis for future history and summary output.
 - Fold packaging-adjacent bug fixes into the release where they make the most sense rather than preserving artificial boundaries.
 
 ### Logging
 
 - Keep current suspend/resume event capture unchanged while packaging work lands.
-- Log AC or charger state at both suspend and resume so charging sessions are explicit instead of inferred.
+- Charger state is now logged at both suspend and resume so charging sessions are explicit instead of inferred.
 
 ## Migration Strategy
 
@@ -146,6 +149,7 @@ See `docs/MIGRATION.md` for the detailed plan. The short version:
 - Hook-backed packaged installs share DB configuration via `/etc/batterylog/config.toml`.
 - New user-only installs use XDG state by default.
 - Legacy `/opt/batterylog/batterylog.db` installs remain supported in place.
+- Current schema version `2` adds charger-state columns while keeping old rows readable.
 - Path moves must be explicit, backed up, and reversible.
 - Schema upgrades must be automatic, backed up, and reversible.
 - Migrations should leave a `.bak` file in place rather than deleting the backup automatically.

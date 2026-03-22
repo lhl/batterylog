@@ -9,11 +9,29 @@ It was built to track suspend power usage for Framework laptops, but is flexible
 
 `INSTALL.sh` is the legacy install format. It remains supported for existing installs and upgrades.
 
-The long-term recommended install path is native Python packaging (`pip`, `uv tool install`, and `pipx`). Those distribution paths are planned but are not published yet, so `INSTALL.sh` is still the current install method for this repo today.
+The long-term recommended install path is native Python packaging (`pip`, `uv tool install`, and `pipx`). Those distribution paths are now smoke-tested in this repo, but there is not a published PyPI release yet, so `INSTALL.sh` is still the current install method documented here today.
 
 Existing legacy command behavior is part of the upgrade contract: `batterylog.py suspend`, `batterylog.py resume`, and the zero-argument report should keep working for upgraded legacy installs.
 Existing legacy data is also part of that contract: upgrades should not silently relocate or replace `/opt/batterylog/batterylog.db`.
 If schema upgrades are needed in the future, they should happen transparently in place for the active database rather than requiring manual intervention.
+
+## Usage
+
+The default invocation still reports the most recent complete suspend/resume cycle:
+
+```sh
+batterylog
+```
+
+Recent-cycle views are now available as additive commands:
+
+```sh
+batterylog history --limit 10
+batterylog summary --limit 10
+batterylog history --discharging-only
+```
+
+Charging sessions are now reported as battery gain instead of negative usage, and suspend/resume rows now record charger-state context for later inspection.
 
 ## Legacy Install
 
@@ -34,7 +52,7 @@ For your 53.67 Wh battery this is 1.30%/hr or 31.29%/day
 
 This script should work w/ any laptop that has a battery available via `sysfs` (it looks for the first battery located by `/sys/class/power_supply/BAT*`). This script has currently only been tested with a Framework laptop and the script doesn't check that all values exist (some batteries don't report some values). It's small enough though that it should be easy to debug/modify for your own purposes. Also, while it stores and keeps all historical values in sqlite, it doesn't really do much else, like have a UI for exposing previous sleeps, etc yet.
 
-The expectation for this release is that the user would be comfortable writing some of their own queries or scripts if they want to do more.
+The expectation for this release is still that the user is comfortable with a CLI-first workflow. The new `history` and `summary` commands cover the most common review use cases without adding a heavier UI layer.
 
 ## Requirements
 * sysfs-class-power (`/sys/class/power_supply`)
@@ -45,6 +63,7 @@ The expectation for this release is that the user would be comfortable writing s
 ## Packaging
 * Arch Linux AUR: [batterylog-git](https://aur.archlinux.org/packages/batterylog-git) packaged by [Stetsed](https://github.com/Stetsed)
 * Reference AUR packaging for the current tree: `packaging/aur/PKGBUILD`
+* Packaging smoke validation for this tree: `python3 scripts/smoke_packaging.py`
 
 ## Other Related Tools
 * [powertop](https://github.com/fenrus75/powertop) - power usage realtime monitoring swiss army knife; can export reports

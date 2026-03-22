@@ -49,18 +49,18 @@ Use this as the active execution checklist for packaging, hook management, and m
 
 ## Phase 5: Reporting And Future Features
 
-- [ ] Preserve existing report output behavior during packaging work
-- [ ] Add a `history` or `summary` mode
-- [ ] Change net-charge sessions to report battery gain instead of negative usage
-- [ ] Add AC or charger state logging with additive schema migration
+- [x] Preserve existing report output behavior during packaging work
+- [x] Add a `history` or `summary` mode
+- [x] Change net-charge sessions to report battery gain instead of negative usage
+- [x] Add AC or charger state logging with additive schema migration
 
 ## Phase 6: Validation And Release
 
 - [x] Add automated tests for path resolution and migration logic once that code exists
-- [ ] Add packaging smoke tests for `pip`, `uv tool install`, `pipx`, and `uvx`
-- [ ] Add legacy-install upgrade tests covering `batterylog.py suspend`, `resume`, and no-arg reporting
+- [x] Add packaging smoke tests for `pip`, `uv tool install`, `pipx`, and `uvx`
+- [x] Add legacy-install upgrade tests covering `batterylog.py suspend`, `resume`, and no-arg reporting
 - [x] Add migration tests covering automatic schema upgrade, `.bak` retention, and rollback
-- [ ] Update `README.md`, `docs/TESTING.md`, and `docs/PUBLISH.md` as implementation lands
+- [x] Update `README.md`, `docs/TESTING.md`, and `docs/PUBLISH.md` as implementation lands
 
 ## Phase 7: Ecosystem Sanity
 
