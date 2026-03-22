@@ -4,25 +4,25 @@ Use this as the active execution checklist for packaging, hook management, and m
 
 ## Phase 1: Package And CLI Foundation
 
-- [ ] Add `pyproject.toml` with `hatchling`, project metadata, console script, and `tool.uv` dev dependencies
-- [ ] Create a `src/batterylog/` package layout for the new `batterylog` CLI
-- [ ] Keep root `batterylog.py` as a thin legacy compatibility shim for upgraded `/opt` installs
-- [ ] Make the shim delegate into packaged code instead of duplicating business logic
-- [ ] Make the shim force legacy defaults such as sibling DB resolution
-- [ ] Keep the current no-argument report behavior
-- [ ] Keep `suspend` and `resume` available for hook use
-- [ ] Read the version from package metadata rather than duplicating version strings in code
-- [ ] Add `--version` to the packaged CLI and preserve it through the legacy shim
+- [x] Add `pyproject.toml` with `hatchling`, project metadata, console script, and `tool.uv` dev dependencies
+- [x] Create a `src/batterylog/` package layout for the new `batterylog` CLI
+- [x] Keep root `batterylog.py` as a thin legacy compatibility shim for upgraded `/opt` installs
+- [x] Make the shim delegate into packaged code instead of duplicating business logic
+- [x] Make the shim force legacy defaults such as sibling DB resolution
+- [x] Keep the current no-argument report behavior
+- [x] Keep `suspend` and `resume` available for hook use
+- [x] Read the version from package metadata rather than duplicating version strings in code
+- [x] Add `--version` to the packaged CLI and preserve it through the legacy shim
 
 ## Phase 2: Paths And Runtime State
 
-- [ ] Implement DB path resolution with this precedence: `--db`, `BATTERYLOG_DB`, `/etc/batterylog/config.toml`, legacy shim sibling DB, XDG state default
-- [ ] Use `/etc/batterylog/config.toml` for hook-backed system installs
+- [x] Implement DB path resolution with this precedence: `--db`, `BATTERYLOG_DB`, `/etc/batterylog/config.toml`, legacy shim sibling DB, XDG state default
+- [x] Use `/etc/batterylog/config.toml` for hook-backed system installs
 - [ ] Default new system installs to `/var/lib/batterylog/batterylog.db`
-- [ ] Default user-only CLI installs to `$XDG_STATE_HOME/batterylog/batterylog.db`
-- [ ] Preserve `/opt/batterylog/batterylog.db` for upgraded legacy installs unless the user explicitly migrates
-- [ ] Add an explicit DB path override for development and admin workflows
-- [ ] Move schema loading so packaged code can find the schema reliably
+- [x] Default user-only CLI installs to `$XDG_STATE_HOME/batterylog/batterylog.db`
+- [x] Preserve `/opt/batterylog/batterylog.db` for upgraded legacy installs unless the user explicitly migrates
+- [x] Add an explicit DB path override for development and admin workflows
+- [x] Move schema loading so packaged code can find the schema reliably
 - [ ] Set hook-backed DB/config permissions so root writes and normal users can read reports without `sudo`
 
 ## Phase 3: Hook Management

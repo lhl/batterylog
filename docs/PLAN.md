@@ -33,10 +33,10 @@ It should also preserve compatibility for existing `INSTALL.sh` users instead of
 
 ## Current State
 
-- One Python script (`batterylog.py`) plus `schema.sql` and `batterylog.system-sleep`
+- A `pyproject.toml` and `src/batterylog/` package skeleton now exist, with `batterylog.py` retained as a legacy shim
 - Current install flow moves a source checkout into `/opt`
-- The database path is coupled to the script directory
-- No `pyproject.toml`, package metadata, or authoritative version source
+- Hook management and packaged install flow are not implemented yet
+- Legacy installs still default to a DB beside the script, while packaged system installs are not wired yet
 - Validation is currently smoke-test driven rather than automated-test driven
 - There is no real schema migration system yet; startup only runs `CREATE TABLE IF NOT EXISTS`
 

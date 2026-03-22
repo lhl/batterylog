@@ -6,10 +6,11 @@ Use this as the release checklist for tagged releases and future PyPI publishing
 
 As of 2026-03-22, this repo is not yet ready for PyPI:
 
-- no `pyproject.toml`
-- no package metadata or build backend
-- no defined version source
+- packaged CLI metadata exists in `pyproject.toml`
+- version metadata exists, but release validation and distribution flow are not complete
 - install flow still assumes moving a checkout into `/opt`
+- hook-management commands are not implemented yet
+- sqlite schema migration is not implemented yet
 
 Do not publish to PyPI until those gaps are addressed.
 

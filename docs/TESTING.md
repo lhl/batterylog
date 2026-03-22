@@ -7,7 +7,7 @@ This repo does not yet have an automated test suite. Keep validation proportiona
 Run the commands that match the files you changed:
 
 ```sh
-python3 -m py_compile batterylog.py
+python3 -m py_compile batterylog.py src/batterylog/*.py
 sh -n INSTALL.sh
 sh -n batterylog.system-sleep
 sqlite3 :memory: < schema.sql
@@ -21,6 +21,7 @@ On a development checkout:
 
 ```sh
 python3 batterylog.py
+python3 -c "import sys; sys.path.insert(0, 'src'); from batterylog.cli import main; raise SystemExit(main([]))"
 ```
 
 Expected result on a fresh checkout: the script initializes `batterylog.db` locally and prints the "No power data available" message.
@@ -80,11 +81,16 @@ Once packaging exists, release validation should also confirm:
 3. persistent installs work via `pip`, `uv tool install`, and `pipx`
 4. an ephemeral `uvx` help or smoke path works for quick verification
 
+Note:
+
+- from the repo root, validate source package execution via direct import with `sys.path.insert(0, 'src')`; `python -m batterylog.cli` is shadowed by the legacy `batterylog.py` shim in this tree
+
 ## Change-Based Expectations
 
 - Docs-only changes: proofread paths, commands, and cross-references.
 - `schema.sql` changes: run the schema check and verify inserts/queries in `batterylog.py` still match.
 - `batterylog.py` changes: run `py_compile` plus the relevant manual smoke check.
+- `src/batterylog/*.py` changes: run `py_compile` plus source CLI smoke checks.
 - Packaging or release changes: run the checks listed in `docs/PUBLISH.md`.
 - DB path or schema changes: run the migration checks from `docs/MIGRATION.md`.
 
