@@ -64,6 +64,7 @@ def test_legacy_batterylog_py_keeps_suspend_resume_and_report_flow(tmp_path, mon
     monkeypatch.setattr("batterylog.core.read_battery_snapshot", lambda: next(snapshots))
     monkeypatch.setattr("batterylog.core.read_charge_full", lambda battery_name: 50_000_000)
     monkeypatch.setattr("batterylog.core.time.time", lambda: next(event_times))
+    monkeypatch.setattr("batterylog.paths.read_db_path_from_config", lambda config_path: None)
 
     assert run_legacy_script(script_path, ["suspend"], monkeypatch) == 0
     assert run_legacy_script(script_path, ["resume"], monkeypatch) == 0

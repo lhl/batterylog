@@ -46,6 +46,7 @@ include = [
   "/INSTALL.sh",
   "/schema.sql",
   "/README.md",
+  "/CHANGELOG.md",
   "/LICENSE",
   "/docs",
   "/scripts",

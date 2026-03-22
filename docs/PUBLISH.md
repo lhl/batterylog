@@ -4,16 +4,21 @@ Use this as the release checklist for tagged releases and future PyPI publishing
 
 ## Current State
 
-As of 2026-03-22, this repo is not yet ready for PyPI:
+As of 2026-03-22, the repo looks structurally ready for a first PyPI release:
 
 - packaged CLI metadata exists in `pyproject.toml`
-- version metadata exists, and packaging smoke validation now exists via `scripts/smoke_packaging.py`
+- version metadata exists
+- packaging smoke validation exists via `scripts/smoke_packaging.py`
 - legacy `INSTALL.sh` now stages `/opt/batterylog` and delegates to the managed hook install path
 - hook-management commands exist and legacy upgrade coverage now exists
 - sqlite schema migration, `migrate-db`, and schema version `2` charger-state migration now exist
-- the remaining work before PyPI is release-level review and publication, not missing packaging scaffolding
 
-Do not publish to PyPI until those gaps are addressed.
+What remains is release execution:
+
+- confirm the README wording for end users
+- build artifacts and run `twine check`
+- tag the release
+- upload with the intended PyPI account/token
 
 ## Release Track
 
@@ -30,7 +35,7 @@ Before cutting any release:
 2. Run the relevant checks from `docs/TESTING.md`.
 3. Run `python3 scripts/smoke_packaging.py`.
 4. Re-read `README.md` and confirm install and usage instructions match the code.
-5. Confirm release notes clearly state what changed and any system requirements.
+5. Update `CHANGELOG.md` in reverse chronological order and confirm the release notes clearly state what changed and any system requirements.
 6. If packaging files exist, confirm the version is updated in the authoritative location only.
 7. If install paths, DB defaults, or schema changed, run the migration checks from `docs/MIGRATION.md`, including automatic upgrade from an old or unversioned DB.
 8. If release work touches install layout or packaging behavior, sanity-check the known `batterylog-git` AUR package or refresh `packaging/aur/PKGBUILD`.

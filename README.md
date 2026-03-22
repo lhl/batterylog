@@ -7,9 +7,13 @@ It was built to track suspend power usage for Framework laptops, but it should w
 
 ## Install Status
 
-`INSTALL.sh` is the legacy install format. It remains supported for existing installs and upgrades.
+Native Python packaging is the recommended install path:
 
-The long-term recommended install path is native Python packaging (`pip`, `uv tool install`, and `pipx`). Those paths are now smoke-tested in this repo, but there is not a published PyPI release yet, so `INSTALL.sh` is still the current install method documented here today.
+- `pipx install batterylog`
+- `uv tool install batterylog`
+- `pip install batterylog`
+
+`INSTALL.sh` is the legacy install format. It remains supported for existing installs and upgrades.
 
 Existing legacy command behavior is part of the upgrade contract: `batterylog.py suspend`, `batterylog.py resume`, and the zero-argument report should keep working for upgraded legacy installs.
 Existing legacy data is also part of that contract: upgrades should not silently relocate or replace `/opt/batterylog/batterylog.db`.
@@ -17,7 +21,13 @@ If schema upgrades are needed in the future, they should happen transparently in
 
 ## Quick Start
 
-Clone the repo and run the legacy installer:
+Install `batterylog`, then run:
+
+```sh
+batterylog
+```
+
+For persistent system hook installs from this repo, the legacy helper still works:
 
 ```sh
 git clone https://github.com/lhl/batterylog.git
@@ -25,42 +35,36 @@ cd batterylog
 ./INSTALL.sh
 ```
 
-`INSTALL.sh` uses `sudo` internally, stages the project into `/opt/batterylog`, and installs the suspend/resume hook.
-
-After install, the legacy command path is:
-
-```sh
-/opt/batterylog/batterylog.py
-```
-
 ## Usage
 
 The default invocation reports the most recent complete suspend/resume cycle:
 
 ```sh
-/opt/batterylog/batterylog.py
+batterylog
 ```
 
 Recent-cycle views:
 
 ```sh
-/opt/batterylog/batterylog.py history --limit 10
-/opt/batterylog/batterylog.py summary --limit 10
-/opt/batterylog/batterylog.py history --discharging-only
+batterylog history --limit 10
+batterylog summary --limit 10
+batterylog history --discharging-only
 ```
 
 Administrative commands:
 
 ```sh
-/opt/batterylog/batterylog.py --version
-/opt/batterylog/batterylog.py migrate-db --from /opt/batterylog/batterylog.db --to /var/lib/batterylog/batterylog.db
+batterylog --version
+batterylog migrate-db --from /opt/batterylog/batterylog.db --to /var/lib/batterylog/batterylog.db
 ```
 
 Charging sessions are reported as battery gain instead of negative usage, and suspend/resume rows now record charger-state context for later inspection.
 
+For legacy `/opt` installs, replace `batterylog` with `/opt/batterylog/batterylog.py`.
+
 ## Legacy Install
 
-Make sure you meet the requirements, clone the repo, and run `INSTALL.sh`. This is the current supported install path in this repository.
+Make sure you meet the requirements, clone the repo, and run `INSTALL.sh`.
 
 The legacy installer stages or refreshes `/opt/batterylog`, then runs the managed hook installer with the legacy DB path so logging continues to write to `/opt/batterylog/batterylog.db`.
 
@@ -81,15 +85,21 @@ The new `history` and `summary` commands cover the most common review use cases 
 
 ## Native Python Installs
 
-There is not a published PyPI release yet, but native Python installs from a checkout now work for local testing:
+Native Python installs are supported:
 
 ```sh
-pip install .
-uv tool install .
-pipx install .
+pipx install batterylog
+uv tool install batterylog
+pip install batterylog
 ```
 
-Those paths are useful for local CLI use. For a persistent system suspend hook, the legacy `INSTALL.sh` path is still the simplest documented setup in this repo today.
+Ephemeral CLI checks:
+
+```sh
+uvx batterylog --help
+```
+
+For a persistent system suspend hook from a repo checkout, `INSTALL.sh` is still the simplest documented setup in this project today.
 
 ## Requirements
 
