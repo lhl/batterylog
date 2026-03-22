@@ -38,14 +38,14 @@ Use this as the active execution checklist for packaging, hook management, and m
 
 ## Phase 4: Migration
 
-- [ ] Add sqlite schema version tracking with `PRAGMA user_version`
-- [ ] Make migration `1` the current-schema baseline with no feature-column changes
-- [ ] Implement transparent in-place migration for old or unversioned DBs
-- [ ] Create `<db path>.bak` before schema migration and leave it in place
-- [ ] Refresh the `.bak` file on each migration attempt
-- [ ] Add explicit `batterylog migrate-db` support for path migration
-- [ ] Keep path migration opt-in and non-destructive
-- [ ] Ensure rollback leaves the original DB authoritative if verification fails
+- [x] Add sqlite schema version tracking with `PRAGMA user_version`
+- [x] Make migration `1` the current-schema baseline with no feature-column changes
+- [x] Implement transparent in-place migration for old or unversioned DBs
+- [x] Create `<db path>.bak` before schema migration and leave it in place
+- [x] Refresh the `.bak` file on each migration attempt
+- [x] Add explicit `batterylog migrate-db` support for path migration
+- [x] Keep path migration opt-in and non-destructive
+- [x] Ensure rollback leaves the original DB authoritative if verification fails
 
 ## Phase 5: Reporting And Future Features
 
@@ -56,8 +56,8 @@ Use this as the active execution checklist for packaging, hook management, and m
 
 ## Phase 6: Validation And Release
 
-- [ ] Add automated tests for path resolution and migration logic once that code exists
+- [x] Add automated tests for path resolution and migration logic once that code exists
 - [ ] Add packaging smoke tests for `pip`, `uv tool install`, `pipx`, and `uvx`
 - [ ] Add legacy-install upgrade tests covering `batterylog.py suspend`, `resume`, and no-arg reporting
-- [ ] Add migration tests covering automatic schema upgrade, `.bak` retention, and rollback
+- [x] Add migration tests covering automatic schema upgrade, `.bak` retention, and rollback
 - [ ] Update `README.md`, `docs/TESTING.md`, and `docs/PUBLISH.md` as implementation lands

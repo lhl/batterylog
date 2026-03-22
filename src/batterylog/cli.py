@@ -5,6 +5,7 @@ from typing import Sequence
 
 from batterylog.core import log_event, report_last_cycle
 from batterylog.hook import HookInstallError, install_hook, uninstall_hook
+from batterylog.migrate import MigrationError, migrate_database_path
 from batterylog.paths import resolve_db_path
 from batterylog.version import get_version
 
@@ -14,11 +15,13 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "command",
         nargs="?",
-        choices=["install-hook", "report", "resume", "suspend", "uninstall-hook"],
+        choices=["install-hook", "migrate-db", "report", "resume", "suspend", "uninstall-hook"],
         default="report",
         help="Default behavior is report when no command is provided.",
     )
     parser.add_argument("--db", dest="db_path", help="Override the sqlite database path.")
+    parser.add_argument("--from", dest="source_db_path", help="Source database path for migrate-db.")
+    parser.add_argument("--to", dest="destination_db_path", help="Destination database path for migrate-db.")
     parser.add_argument("--hook-command", help=argparse.SUPPRESS)
     parser.add_argument(
         "--version",
@@ -43,6 +46,9 @@ def main(argv: Sequence[str] | None = None, *, legacy_base_dir: str | Path | Non
                 file=sys.stderr,
             )
             return 1
+        except MigrationError as exc:
+            print(exc, file=sys.stderr)
+            return 1
         except HookInstallError as exc:
             print(exc, file=sys.stderr)
             return 1
@@ -58,12 +64,29 @@ def main(argv: Sequence[str] | None = None, *, legacy_base_dir: str | Path | Non
             )
             return 1
 
+    if args.command == "migrate-db":
+        if not args.source_db_path or not args.destination_db_path:
+            parser.error("migrate-db requires --from and --to")
+
+        try:
+            return migrate_database_path(
+                Path(args.source_db_path),
+                Path(args.destination_db_path),
+            )
+        except MigrationError as exc:
+            print(exc, file=sys.stderr)
+            return 1
+
     db_path = resolve_db_path(args.db_path, legacy_base_dir=legacy_base_dir)
 
-    if args.command in {"suspend", "resume"}:
-        return log_event(db_path, args.command)
+    try:
+        if args.command in {"suspend", "resume"}:
+            return log_event(db_path, args.command)
 
-    return report_last_cycle(db_path)
+        return report_last_cycle(db_path)
+    except MigrationError as exc:
+        print(exc, file=sys.stderr)
+        return 1
 
 
 def console_main() -> int:

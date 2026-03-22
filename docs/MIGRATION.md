@@ -16,7 +16,8 @@ Today, legacy installs behave like this:
 - code lives in `/opt/batterylog`
 - the sleep hook calls `/opt/batterylog/batterylog.py`
 - the database lives at `/opt/batterylog/batterylog.db`
-- startup creates the table if missing, but does not perform real upgrades
+- startup now upgrades old or unversioned DBs in place to `PRAGMA user_version = 1`
+- automatic schema migration leaves `<db path>.bak` in place
 
 ## Target State
 
@@ -100,7 +101,7 @@ Safety requirements:
 
 This is optional and only for users who want to move from a legacy DB path to a new standard path.
 
-Planned CLI shape:
+CLI shape:
 
 ```sh
 batterylog migrate-db --from /opt/batterylog/batterylog.db --to /var/lib/batterylog/batterylog.db
@@ -120,7 +121,7 @@ Recommended behavior:
 
 Future features such as charger-state logging will need schema changes.
 
-Planned mechanism:
+Current mechanism:
 
 - use `PRAGMA user_version`
 - keep numbered migrations in code

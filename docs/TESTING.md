@@ -1,6 +1,6 @@
 # Testing
 
-This repo now has a small pytest suite for CLI and hook-management logic. Keep validation proportional: syntax checks for every change, pytest for pure logic, plus manual hardware checks when behavior changes.
+This repo now has a small pytest suite for CLI, migration, and hook-management logic. Keep validation proportional: syntax checks for every change, pytest for pure logic, plus manual hardware checks when behavior changes.
 
 ## Fast Checks
 
@@ -81,6 +81,15 @@ Once packaging exists, release validation should also confirm:
 2. the built package can run `batterylog --help`
 3. persistent installs work via `pip`, `uv tool install`, and `pipx`
 4. an ephemeral `uvx` help or smoke path works for quick verification
+
+### Migration Smoke Checks
+
+For `migrate-db` or schema-version changes, also confirm:
+
+1. opening an old or unversioned DB upgrades it to the current `PRAGMA user_version`
+2. `<db path>.bak` is created and retained after automatic schema migration
+3. `batterylog migrate-db --from ... --to ...` leaves the source DB intact and writes a verified destination DB
+4. if migration verification fails, the original DB remains authoritative
 
 Note:
 

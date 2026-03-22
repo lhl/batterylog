@@ -36,8 +36,9 @@ It should also preserve compatibility for existing `INSTALL.sh` users instead of
 - A `pyproject.toml` and `src/batterylog/` package skeleton now exist, with `batterylog.py` retained as a legacy shim
 - The packaged CLI now supports `install-hook` and `uninstall-hook`, and `INSTALL.sh` delegates legacy hook setup to that managed path
 - Legacy installs still default to a DB beside the script, while packaged hook installs now default to `/var/lib/batterylog/batterylog.db`
-- Validation now includes a small pytest suite for CLI dispatch and hook-management filesystem behavior
-- There is no real schema migration system yet; startup only runs `CREATE TABLE IF NOT EXISTS`
+- The runtime now auto-upgrades old or unversioned DBs to schema version `1` with a retained `.bak` backup
+- `batterylog migrate-db --from ... --to ...` now exists for explicit path migration
+- Validation now includes a small pytest suite for CLI dispatch, migration logic, and hook-management filesystem behavior
 
 ## Phase 1: Packaging Foundation
 

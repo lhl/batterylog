@@ -10,7 +10,7 @@ As of 2026-03-22, this repo is not yet ready for PyPI:
 - version metadata exists, but release validation and distribution flow are not complete
 - legacy `INSTALL.sh` now stages `/opt/batterylog` and delegates to the managed hook install path
 - hook-management commands exist, but packaged install documentation and release validation are not complete
-- sqlite schema migration is not implemented yet
+- sqlite schema migration and `migrate-db` exist, but packaged-install release validation is not complete
 
 Do not publish to PyPI until those gaps are addressed.
 

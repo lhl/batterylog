@@ -39,3 +39,28 @@ def test_cli_uninstall_hook_dispatches_to_hook_manager(monkeypatch):
 
     assert main(["uninstall-hook"]) == 0
     assert called["count"] == 1
+
+
+def test_cli_migrate_db_dispatches_to_migration_manager(monkeypatch, tmp_path):
+    captured = {}
+
+    def fake_migrate_database_path(source_path, destination_path):
+        captured["source"] = source_path
+        captured["destination"] = destination_path
+        return 0
+
+    monkeypatch.setattr("batterylog.cli.migrate_database_path", fake_migrate_database_path)
+
+    result = main(
+        [
+            "migrate-db",
+            "--from",
+            str(tmp_path / "source.db"),
+            "--to",
+            str(tmp_path / "destination.db"),
+        ]
+    )
+
+    assert result == 0
+    assert captured["source"] == Path(tmp_path / "source.db")
+    assert captured["destination"] == Path(tmp_path / "destination.db")
