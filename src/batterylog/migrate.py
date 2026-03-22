@@ -40,10 +40,9 @@ def ensure_database_schema(connection: sqlite3.Connection, db_path: Path, *, db_
         if backup_path is None:
             raise MigrationError(f"Failed to initialize database at {db_path}: {exc}") from exc
 
-        connection.close()
         try:
-            restore_database_from_backup(db_path)
-        except OSError as restore_exc:
+            restore_connection_from_backup(connection, db_path)
+        except (OSError, sqlite3.Error) as restore_exc:
             raise MigrationError(
                 f"Failed to migrate {db_path}: {exc}. Restore from {backup_path} also failed: {restore_exc}"
             ) from exc
@@ -155,7 +154,7 @@ def get_user_version(connection: sqlite3.Connection) -> int:
 
 
 def set_user_version(connection: sqlite3.Connection, version: int) -> None:
-    connection.execute(f"PRAGMA user_version = {version}")
+    connection.execute(f"PRAGMA user_version = {int(version)}")
 
 
 def database_backup_path(db_path: Path) -> Path:
@@ -182,8 +181,13 @@ def refresh_destination_backup(destination_path: Path) -> Path | None:
     return backup_path
 
 
-def restore_database_from_backup(db_path: Path) -> None:
-    copy_file_atomically(database_backup_path(db_path), db_path)
+def restore_connection_from_backup(connection: sqlite3.Connection, db_path: Path) -> None:
+    backup_path = database_backup_path(db_path)
+    source_connection = sqlite3.connect(str(backup_path))
+    try:
+        source_connection.backup(connection)
+    finally:
+        source_connection.close()
 
 
 def rollback_destination(destination_path: Path, destination_backup_path: Path | None) -> OSError | None:

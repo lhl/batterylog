@@ -111,11 +111,19 @@ Recommended behavior:
 
 1. validate source DB exists and is readable
 2. validate destination parent directory exists or can be created
-3. create `<db path>.bak` before making changes and leave it in place
-4. copy data to the destination instead of moving first
-5. verify the copied DB opens and contains the expected schema
-6. leave the source DB untouched unless the user explicitly asks to retire it
-7. print the next manual step for updating hook or config paths
+3. refresh `<source db>.bak` before any source-side migration work and leave it in place
+4. if the source DB is old or unversioned, upgrade it in place before copying it
+5. if the destination DB already exists, refresh `<destination db>.bak` before overwriting it
+6. copy the verified source DB to the destination instead of moving first
+7. verify the copied DB opens and contains the expected schema
+8. leave the source DB in place unless the user explicitly asks to retire it
+9. print the next manual step for updating hook or config paths
+
+Notes:
+
+- `migrate-db` does not accumulate timestamped backups. Each run refreshes the fixed sibling `.bak` path and replaces any existing backup file there.
+- When `migrate-db` starts from an old or unversioned source DB, the source path is live-migrated to the current schema first, with its pre-migration state preserved in `<source db>.bak`.
+- If the destination path already exists, its previous contents are preserved in `<destination db>.bak` before the verified copy is written.
 
 ### 3. Schema Migration
 

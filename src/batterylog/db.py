@@ -10,7 +10,11 @@ def connect_database(db_path: Path) -> sqlite3.Connection:
     db_existed = db_path.exists()
     connection = sqlite3.connect(str(db_path))
     connection.row_factory = sqlite3.Row
-    initialize_database(connection, db_path, db_existed=db_existed)
+    try:
+        initialize_database(connection, db_path, db_existed=db_existed)
+    except Exception:
+        connection.close()
+        raise
     return connection
 
 

@@ -96,7 +96,7 @@ For `migrate-db` or schema-version changes, also confirm:
 
 1. opening an old or unversioned DB upgrades it to the current `PRAGMA user_version`
 2. `<db path>.bak` is created and retained after automatic schema migration
-3. `batterylog migrate-db --from ... --to ...` leaves the source DB intact and writes a verified destination DB
+3. `batterylog migrate-db --from ... --to ...` leaves the source DB in place, may auto-upgrade it first, and writes a verified destination DB
 4. if migration verification fails, the original DB remains authoritative
 
 Note:

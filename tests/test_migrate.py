@@ -87,6 +87,30 @@ def test_connect_database_restores_original_db_on_migration_failure(tmp_path, mo
     assert database_backup_path(db_path).exists()
 
 
+def test_ensure_database_schema_keeps_caller_connection_open_on_failure(tmp_path, monkeypatch):
+    db_path = tmp_path / "batterylog.db"
+    create_unversioned_db(db_path)
+
+    def failing_migration(connection):
+        raise sqlite3.OperationalError("simulated migration failure")
+
+    monkeypatch.setitem(migrate_module.MIGRATIONS, 1, failing_migration)
+
+    connection = sqlite3.connect(str(db_path))
+    try:
+        with pytest.raises(MigrationError, match="Restored from"):
+            migrate_module.ensure_database_schema(connection, db_path, db_existed=True)
+
+        assert int(connection.execute("PRAGMA user_version").fetchone()[0]) == 0
+        assert int(connection.execute("SELECT COUNT(*) FROM log").fetchone()[0]) == 1
+    finally:
+        connection.close()
+
+    assert read_user_version(db_path) == 0
+    assert read_log_count(db_path) == 1
+    assert database_backup_path(db_path).exists()
+
+
 def test_migrate_database_path_copies_db_and_preserves_source_backup(tmp_path):
     source_path = tmp_path / "source.db"
     destination_path = tmp_path / "destination.db"
