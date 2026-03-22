@@ -8,7 +8,40 @@ from batterylog.paths import ensure_parent_dir
 from batterylog.schema import load_schema_sql
 
 
-CURRENT_SCHEMA_VERSION = 1
+CURRENT_SCHEMA_VERSION = 2
+LOG_TABLE_COLUMNS_BY_VERSION = {
+    1: (
+        "time",
+        "name",
+        "event",
+        "cycle_count",
+        "charge_now",
+        "current_now",
+        "voltage_now",
+        "voltage_min_design",
+        "energy_now",
+        "energy_min",
+        "power_now",
+        "power_min",
+    ),
+    2: (
+        "time",
+        "name",
+        "event",
+        "cycle_count",
+        "charge_now",
+        "current_now",
+        "voltage_now",
+        "voltage_min_design",
+        "energy_now",
+        "energy_min",
+        "power_now",
+        "power_min",
+        "battery_status",
+        "line_power_name",
+        "line_power_online",
+    ),
+}
 
 
 class MigrationError(RuntimeError):
@@ -119,8 +152,15 @@ def migrate_to_v1(connection: sqlite3.Connection) -> None:
     connection.executescript(load_schema_sql())
 
 
+def migrate_to_v2(connection: sqlite3.Connection) -> None:
+    connection.execute('ALTER TABLE "log" ADD COLUMN "battery_status" TEXT')
+    connection.execute('ALTER TABLE "log" ADD COLUMN "line_power_name" TEXT')
+    connection.execute('ALTER TABLE "log" ADD COLUMN "line_power_online" INTEGER')
+
+
 MIGRATIONS = {
     1: migrate_to_v1,
+    2: migrate_to_v2,
 }
 
 
@@ -139,6 +179,18 @@ def verify_database(connection: sqlite3.Connection, *, expected_version: int) ->
     ).fetchone()
     if row is None:
         raise MigrationError("Database is missing the log table.")
+
+    columns = {
+        column[1]
+        for column in connection.execute('PRAGMA table_info("log")').fetchall()
+    }
+    expected_columns = LOG_TABLE_COLUMNS_BY_VERSION.get(expected_version, ())
+    missing_columns = [column for column in expected_columns if column not in columns]
+    if missing_columns:
+        raise MigrationError(
+            f"Database is missing expected log columns for schema version {expected_version}: "
+            f"{', '.join(missing_columns)}."
+        )
 
 
 def verify_database_file(db_path: Path, *, expected_version: int) -> None:

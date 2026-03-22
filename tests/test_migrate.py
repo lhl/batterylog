@@ -53,6 +53,14 @@ def read_log_count(db_path):
         connection.close()
 
 
+def read_log_columns(db_path):
+    connection = sqlite3.connect(str(db_path))
+    try:
+        return [row[1] for row in connection.execute('PRAGMA table_info("log")').fetchall()]
+    finally:
+        connection.close()
+
+
 def test_connect_database_migrates_unversioned_db_and_keeps_backup(tmp_path):
     db_path = tmp_path / "batterylog.db"
     create_unversioned_db(db_path)
@@ -68,6 +76,9 @@ def test_connect_database_migrates_unversioned_db_and_keeps_backup(tmp_path):
     assert backup_path.exists()
     assert read_user_version(backup_path) == 0
     assert read_log_count(backup_path) == 1
+    assert "battery_status" in read_log_columns(db_path)
+    assert "line_power_name" in read_log_columns(db_path)
+    assert "line_power_online" in read_log_columns(db_path)
 
 
 def test_connect_database_restores_original_db_on_migration_failure(tmp_path, monkeypatch):
@@ -145,3 +156,26 @@ def test_migrate_database_path_removes_partial_destination_on_failure(tmp_path, 
     assert source_path.exists()
     assert database_backup_path(source_path).exists()
     assert not destination_path.exists()
+
+
+def test_connect_database_migrates_v1_db_to_v2(tmp_path):
+    db_path = tmp_path / "batterylog.db"
+    create_unversioned_db(db_path)
+
+    connection = sqlite3.connect(str(db_path))
+    try:
+        connection.execute("PRAGMA user_version = 1")
+        connection.commit()
+    finally:
+        connection.close()
+
+    connection = connect_database(db_path)
+    try:
+        assert int(connection.execute("PRAGMA user_version").fetchone()[0]) == CURRENT_SCHEMA_VERSION
+    finally:
+        connection.close()
+
+    columns = read_log_columns(db_path)
+    assert "battery_status" in columns
+    assert "line_power_name" in columns
+    assert "line_power_online" in columns

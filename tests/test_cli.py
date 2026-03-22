@@ -64,3 +64,58 @@ def test_cli_migrate_db_dispatches_to_migration_manager(monkeypatch, tmp_path):
     assert result == 0
     assert captured["source"] == Path(tmp_path / "source.db")
     assert captured["destination"] == Path(tmp_path / "destination.db")
+
+
+def test_cli_history_dispatches_to_history_report(monkeypatch, tmp_path):
+    captured = {}
+
+    def fake_report_history(db_path, *, limit, discharging_only):
+        captured["db_path"] = db_path
+        captured["limit"] = limit
+        captured["discharging_only"] = discharging_only
+        return 0
+
+    monkeypatch.setattr("batterylog.cli.report_history", fake_report_history)
+
+    result = main(
+        [
+            "history",
+            "--db",
+            str(tmp_path / "batterylog.db"),
+            "--limit",
+            "5",
+            "--discharging-only",
+        ]
+    )
+
+    assert result == 0
+    assert captured["db_path"] == Path(tmp_path / "batterylog.db")
+    assert captured["limit"] == 5
+    assert captured["discharging_only"] is True
+
+
+def test_cli_summary_dispatches_to_summary_report(monkeypatch, tmp_path):
+    captured = {}
+
+    def fake_report_summary(db_path, *, limit, discharging_only):
+        captured["db_path"] = db_path
+        captured["limit"] = limit
+        captured["discharging_only"] = discharging_only
+        return 0
+
+    monkeypatch.setattr("batterylog.cli.report_summary", fake_report_summary)
+
+    result = main(
+        [
+            "summary",
+            "--db",
+            str(tmp_path / "batterylog.db"),
+            "--limit",
+            "7",
+        ]
+    )
+
+    assert result == 0
+    assert captured["db_path"] == Path(tmp_path / "batterylog.db")
+    assert captured["limit"] == 7
+    assert captured["discharging_only"] is False
