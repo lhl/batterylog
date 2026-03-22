@@ -18,23 +18,23 @@ Use this as the active execution checklist for packaging, hook management, and m
 
 - [x] Implement DB path resolution with this precedence: `--db`, `BATTERYLOG_DB`, `/etc/batterylog/config.toml`, legacy shim sibling DB, XDG state default
 - [x] Use `/etc/batterylog/config.toml` for hook-backed system installs
-- [ ] Default new system installs to `/var/lib/batterylog/batterylog.db`
+- [x] Default new system installs to `/var/lib/batterylog/batterylog.db`
 - [x] Default user-only CLI installs to `$XDG_STATE_HOME/batterylog/batterylog.db`
 - [x] Preserve `/opt/batterylog/batterylog.db` for upgraded legacy installs unless the user explicitly migrates
 - [x] Add an explicit DB path override for development and admin workflows
 - [x] Move schema loading so packaged code can find the schema reliably
-- [ ] Set hook-backed DB/config permissions so root writes and normal users can read reports without `sudo`
+- [x] Set hook-backed DB/config permissions so root writes and normal users can read reports without `sudo`
 
 ## Phase 3: Hook Management
 
-- [ ] Add `batterylog install-hook`
-- [ ] Add `batterylog uninstall-hook`
-- [ ] Generate the hook from the resolved `batterylog` executable path plus an explicit DB path
-- [ ] Write hook-backed config to `/etc/batterylog/config.toml`
-- [ ] Refuse `install-hook` from `uvx` or any other ephemeral executable path
-- [ ] Make hook install idempotent for reinstall and upgrade cases
-- [ ] Convert `INSTALL.sh` into a legacy wrapper around the maintained install path
-- [ ] Keep legacy `/opt` upgrade behavior working
+- [x] Add `batterylog install-hook`
+- [x] Add `batterylog uninstall-hook`
+- [x] Generate the hook from the resolved `batterylog` executable path plus an explicit DB path
+- [x] Write hook-backed config to `/etc/batterylog/config.toml`
+- [x] Refuse `install-hook` from `uvx` or any other ephemeral executable path
+- [x] Make hook install idempotent for reinstall and upgrade cases
+- [x] Convert `INSTALL.sh` into a legacy wrapper around the maintained install path
+- [x] Keep legacy `/opt` upgrade behavior working
 
 ## Phase 4: Migration
 
@@ -56,7 +56,7 @@ Use this as the active execution checklist for packaging, hook management, and m
 
 ## Phase 6: Validation And Release
 
-- [ ] Add automated tests for path resolution, migration logic, and CLI parsing once logic is isolated
+- [ ] Add automated tests for path resolution and migration logic once that code exists
 - [ ] Add packaging smoke tests for `pip`, `uv tool install`, `pipx`, and `uvx`
 - [ ] Add legacy-install upgrade tests covering `batterylog.py suspend`, `resume`, and no-arg reporting
 - [ ] Add migration tests covering automatic schema upgrade, `.bak` retention, and rollback

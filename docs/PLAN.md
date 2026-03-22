@@ -34,10 +34,9 @@ It should also preserve compatibility for existing `INSTALL.sh` users instead of
 ## Current State
 
 - A `pyproject.toml` and `src/batterylog/` package skeleton now exist, with `batterylog.py` retained as a legacy shim
-- Current install flow moves a source checkout into `/opt`
-- Hook management and packaged install flow are not implemented yet
-- Legacy installs still default to a DB beside the script, while packaged system installs are not wired yet
-- Validation is currently smoke-test driven rather than automated-test driven
+- The packaged CLI now supports `install-hook` and `uninstall-hook`, and `INSTALL.sh` delegates legacy hook setup to that managed path
+- Legacy installs still default to a DB beside the script, while packaged hook installs now default to `/var/lib/batterylog/batterylog.db`
+- Validation now includes a small pytest suite for CLI dispatch and hook-management filesystem behavior
 - There is no real schema migration system yet; startup only runs `CREATE TABLE IF NOT EXISTS`
 
 ## Phase 1: Packaging Foundation
@@ -104,7 +103,7 @@ It should also preserve compatibility for existing `INSTALL.sh` users instead of
 ## Phase 3: Testing And Release
 
 1. Keep the current fast smoke checks:
-   - `python3 -m py_compile batterylog.py`
+   - `python3 -m py_compile batterylog.py src/batterylog/*.py tests/*.py`
    - `sh -n INSTALL.sh`
    - `sh -n batterylog.system-sleep`
    - `sqlite3 :memory: < schema.sql`

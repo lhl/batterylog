@@ -1,16 +1,17 @@
 # Testing
 
-This repo does not yet have an automated test suite. Keep validation proportional: syntax checks for every change, plus manual hardware checks when behavior changes.
+This repo now has a small pytest suite for CLI and hook-management logic. Keep validation proportional: syntax checks for every change, pytest for pure logic, plus manual hardware checks when behavior changes.
 
 ## Fast Checks
 
 Run the commands that match the files you changed:
 
 ```sh
-python3 -m py_compile batterylog.py src/batterylog/*.py
+python3 -m py_compile batterylog.py src/batterylog/*.py tests/*.py
 sh -n INSTALL.sh
 sh -n batterylog.system-sleep
 sqlite3 :memory: < schema.sql
+pytest
 ```
 
 ## Manual Smoke Checks
@@ -48,7 +49,7 @@ If `INSTALL.sh` or the hook path changes:
 
 1. Test on a disposable checkout, VM, or non-critical host.
 2. Confirm the install path is the one documented in `README.md`.
-3. Confirm the hook executes the installed script, not the development checkout by accident.
+3. Confirm the hook executes the installed command path, not the development checkout by accident.
 4. Confirm the install step does not silently discard user data.
 5. Confirm reinstalling or upgrading an existing legacy install behaves predictably.
 
@@ -90,7 +91,7 @@ Note:
 - Docs-only changes: proofread paths, commands, and cross-references.
 - `schema.sql` changes: run the schema check and verify inserts/queries in `batterylog.py` still match.
 - `batterylog.py` changes: run `py_compile` plus the relevant manual smoke check.
-- `src/batterylog/*.py` changes: run `py_compile` plus source CLI smoke checks.
+- `src/batterylog/*.py` changes: run `py_compile`, `pytest`, and the relevant source CLI smoke checks.
 - Packaging or release changes: run the checks listed in `docs/PUBLISH.md`.
 - DB path or schema changes: run the migration checks from `docs/MIGRATION.md`.
 

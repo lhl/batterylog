@@ -4,10 +4,11 @@
 
 ## Project Shape
 
-- `batterylog.py`: main script for logging and last-cycle reporting
-- `batterylog.system-sleep`: systemd hook that records `suspend` and `resume`
+- `batterylog.py`: legacy compatibility shim for `/opt` installs
+- `src/batterylog/`: packaged CLI and runtime logic
+- `batterylog.system-sleep`: legacy hook example; managed installs now generate the active hook
 - `schema.sql`: sqlite schema
-- `INSTALL.sh`: current install helper
+- `INSTALL.sh`: legacy install wrapper that stages `/opt/batterylog` and delegates to the managed hook installer
 - `README.md`: user-facing overview
 - `docs/README.md`: index of development docs
 - `docs/PLAN.md`: active implementation and packaging plan
@@ -32,7 +33,8 @@ Run the smallest relevant checks from `docs/TESTING.md`.
 
 Minimum expectations by change type:
 
-- Python changes: `python3 -m py_compile batterylog.py`
+- Python changes: `python3 -m py_compile batterylog.py src/batterylog/*.py tests/*.py`
+- Pure logic changes: `pytest`
 - Shell changes: `sh -n INSTALL.sh` and `sh -n batterylog.system-sleep`
 - Schema changes: `sqlite3 :memory: < schema.sql`
 - Install, suspend/resume, or reporting changes: manual Linux smoke test on a machine with `/sys/class/power_supply/BAT*`

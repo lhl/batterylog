@@ -8,8 +8,8 @@ As of 2026-03-22, this repo is not yet ready for PyPI:
 
 - packaged CLI metadata exists in `pyproject.toml`
 - version metadata exists, but release validation and distribution flow are not complete
-- install flow still assumes moving a checkout into `/opt`
-- hook-management commands are not implemented yet
+- legacy `INSTALL.sh` now stages `/opt/batterylog` and delegates to the managed hook install path
+- hook-management commands exist, but packaged install documentation and release validation are not complete
 - sqlite schema migration is not implemented yet
 
 Do not publish to PyPI until those gaps are addressed.

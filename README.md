@@ -19,7 +19,7 @@ If schema upgrades are needed in the future, they should happen transparently in
 
 Make sure you meet the requirements, clone the repo, and run `INSTALL.sh`. This is the current supported install path in this repository.
 
-The legacy installer currently moves the cloned repo to `/opt/batterylog` and installs the suspend hook so logging writes to `/opt/batterylog/batterylog.db`.
+The legacy installer stages or refreshes `/opt/batterylog`, then runs the managed hook installer with the legacy DB path so logging continues to write to `/opt/batterylog/batterylog.db`.
 
 Future installer work will keep this path functioning for upgrades and reinstalls, but new packaged releases should eventually be preferred over this legacy flow.
 
