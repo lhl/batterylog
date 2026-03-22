@@ -35,6 +35,7 @@ def read_battery_snapshot() -> BatterySnapshot | None:
     battery_dir = find_first_battery_dir()
     if battery_dir is None:
         return None
+    line_power_name, line_power_online = read_line_power_state()
 
     return BatterySnapshot(
         name=battery_dir.name,
@@ -44,8 +45,8 @@ def read_battery_snapshot() -> BatterySnapshot | None:
         voltage_now=read_int(battery_dir / "voltage_now"),
         voltage_min_design=read_int(battery_dir / "voltage_min_design"),
         battery_status=read_optional_text(battery_dir / "status"),
-        line_power_name=read_line_power_name(),
-        line_power_online=read_line_power_online(),
+        line_power_name=line_power_name,
+        line_power_online=line_power_online,
     )
 
 
@@ -79,20 +80,12 @@ def find_first_line_power_dir() -> Path | None:
     return None
 
 
-def read_line_power_name() -> str | None:
+def read_line_power_state() -> tuple[str | None, int | None]:
     line_power_dir = find_first_line_power_dir()
     if line_power_dir is None:
-        return None
+        return None, None
 
-    return line_power_dir.name
-
-
-def read_line_power_online() -> int | None:
-    line_power_dir = find_first_line_power_dir()
-    if line_power_dir is None:
-        return None
-
-    return read_int(line_power_dir / "online")
+    return line_power_dir.name, read_int(line_power_dir / "online")
 
 
 def read_int(path: Path) -> int:

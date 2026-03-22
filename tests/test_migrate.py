@@ -10,12 +10,12 @@ from batterylog.migrate import (
     database_backup_path,
     migrate_database_path,
 )
-from batterylog.schema import load_schema_sql
+from batterylog.schema import load_legacy_schema_sql, load_schema_sql
 
 
 def create_unversioned_db(db_path):
     connection = sqlite3.connect(str(db_path))
-    connection.executescript(load_schema_sql())
+    connection.executescript(load_legacy_schema_sql())
     connection.execute(
         "INSERT INTO log VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         (
@@ -79,6 +79,35 @@ def test_connect_database_migrates_unversioned_db_and_keeps_backup(tmp_path):
     assert "battery_status" in read_log_columns(db_path)
     assert "line_power_name" in read_log_columns(db_path)
     assert "line_power_online" in read_log_columns(db_path)
+
+
+def test_connect_database_initializes_new_db_with_current_schema(tmp_path):
+    db_path = tmp_path / "batterylog.db"
+
+    connection = connect_database(db_path)
+    try:
+        assert int(connection.execute("PRAGMA user_version").fetchone()[0]) == CURRENT_SCHEMA_VERSION
+    finally:
+        connection.close()
+
+    assert read_log_columns(db_path) == [
+        "time",
+        "name",
+        "event",
+        "cycle_count",
+        "charge_now",
+        "current_now",
+        "voltage_now",
+        "voltage_min_design",
+        "energy_now",
+        "energy_min",
+        "power_now",
+        "power_min",
+        "battery_status",
+        "line_power_name",
+        "line_power_online",
+    ]
+    assert not database_backup_path(db_path).exists()
 
 
 def test_connect_database_restores_original_db_on_migration_failure(tmp_path, monkeypatch):
@@ -179,3 +208,30 @@ def test_connect_database_migrates_v1_db_to_v2(tmp_path):
     assert "battery_status" in columns
     assert "line_power_name" in columns
     assert "line_power_online" in columns
+
+
+def test_schema_sql_describes_current_schema():
+    connection = sqlite3.connect(":memory:")
+    try:
+        connection.executescript(load_schema_sql())
+        columns = [row[1] for row in connection.execute('PRAGMA table_info("log")').fetchall()]
+    finally:
+        connection.close()
+
+    assert columns == [
+        "time",
+        "name",
+        "event",
+        "cycle_count",
+        "charge_now",
+        "current_now",
+        "voltage_now",
+        "voltage_min_design",
+        "energy_now",
+        "energy_min",
+        "power_now",
+        "power_min",
+        "battery_status",
+        "line_power_name",
+        "line_power_online",
+    ]

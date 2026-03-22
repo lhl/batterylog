@@ -5,7 +5,7 @@ import tempfile
 from pathlib import Path
 
 from batterylog.paths import ensure_parent_dir
-from batterylog.schema import load_schema_sql
+from batterylog.schema import load_legacy_schema_sql, load_schema_sql
 
 
 CURRENT_SCHEMA_VERSION = 2
@@ -59,6 +59,15 @@ def ensure_database_schema(connection: sqlite3.Connection, db_path: Path, *, db_
     if current_version == CURRENT_SCHEMA_VERSION:
         verify_database(connection, expected_version=CURRENT_SCHEMA_VERSION)
         return
+
+    if current_version == 0 and not db_existed:
+        try:
+            initialize_latest_schema(connection)
+            verify_database(connection, expected_version=CURRENT_SCHEMA_VERSION)
+            return
+        except Exception as exc:
+            safe_rollback(connection)
+            raise MigrationError(f"Failed to initialize database at {db_path}: {exc}") from exc
 
     backup_path = None
     if db_existed:
@@ -149,13 +158,19 @@ def run_migrations(connection: sqlite3.Connection, current_version: int) -> None
 
 
 def migrate_to_v1(connection: sqlite3.Connection) -> None:
-    connection.executescript(load_schema_sql())
+    connection.executescript(load_legacy_schema_sql())
 
 
 def migrate_to_v2(connection: sqlite3.Connection) -> None:
     connection.execute('ALTER TABLE "log" ADD COLUMN "battery_status" TEXT')
     connection.execute('ALTER TABLE "log" ADD COLUMN "line_power_name" TEXT')
     connection.execute('ALTER TABLE "log" ADD COLUMN "line_power_online" INTEGER')
+
+
+def initialize_latest_schema(connection: sqlite3.Connection) -> None:
+    connection.executescript(load_schema_sql())
+    set_user_version(connection, CURRENT_SCHEMA_VERSION)
+    connection.commit()
 
 
 MIGRATIONS = {

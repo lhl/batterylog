@@ -11,5 +11,8 @@ CREATE TABLE IF NOT EXISTS "log" (
 	"energy_min"	INTEGER,
 	"power_now"	INTEGER,
 	"power_min"	INTEGER,
+	"battery_status"	TEXT,
+	"line_power_name"	TEXT,
+	"line_power_online"	INTEGER,
 	PRIMARY KEY("time")
 );
