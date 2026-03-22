@@ -54,7 +54,10 @@ batterylog history --discharging-only
 Administrative commands:
 
 ```sh
+batterylog --help
 batterylog --version
+batterylog install-hook
+batterylog uninstall-hook
 batterylog migrate-db --from /opt/batterylog/batterylog.db --to /var/lib/batterylog/batterylog.db
 ```
 
@@ -85,7 +88,7 @@ The new `history` and `summary` commands cover the most common review use cases 
 
 ## Native Python Installs
 
-Native Python installs are supported:
+Common install commands:
 
 ```sh
 pipx install batterylog

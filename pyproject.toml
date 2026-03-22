@@ -31,6 +31,7 @@ batterylog = "batterylog.cli:console_main"
 [project.urls]
 Homepage = "https://github.com/lhl/batterylog"
 Repository = "https://github.com/lhl/batterylog"
+Changelog = "https://github.com/lhl/batterylog/blob/main/CHANGELOG.md"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/batterylog"]
