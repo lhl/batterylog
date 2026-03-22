@@ -12,6 +12,7 @@ NO_DATA_MESSAGE = (
 )
 
 NO_BATTERY_MESSAGE = "Sorry we couldn't find a battery in /sys/class/power_supply"
+NO_CAPACITY_MESSAGE = "Battery full-capacity metadata unavailable; skipping percentage estimate."
 
 
 def log_event(db_path: Path, event: str) -> int:
@@ -82,16 +83,20 @@ def report_last_cycle(db_path: Path) -> int:
     energy_used_wh = Decimal(suspend["energy_min"] - resume["energy_min"]) / Decimal(1000000000000)
     power_use_w = energy_used_wh / delta_h
 
-    charge_full = read_charge_full(resume["name"])
-    energy_full_wh = Decimal(charge_full) / Decimal(1000000000000) * Decimal(resume["voltage_min_design"])
-    percent_per_h = 100 * power_use_w / energy_full_wh
-
     print("Slept for {:.2f} hours".format(delta_h))
     print("Used {:.2f} Wh, an average rate of {:.2f} W".format(energy_used_wh, power_use_w))
 
     if power_use_w > 0:
         until_empty_h = Decimal(resume["energy_min"]) / Decimal(1000000000000) / power_use_w
         print("At {:.2f} W drain your battery would be empty in {:.2f} hours".format(power_use_w, until_empty_h))
+
+    charge_full = read_charge_full(resume["name"])
+    energy_full_wh = Decimal(charge_full) / Decimal(1000000000000) * Decimal(resume["voltage_min_design"])
+    if energy_full_wh <= 0:
+        print(NO_CAPACITY_MESSAGE)
+        return 0
+
+    percent_per_h = 100 * power_use_w / energy_full_wh
 
     print(
         "For your {:.2f} Wh battery this is {:.2f}%/hr or {:.2f}%/day".format(
