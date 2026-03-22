@@ -41,7 +41,7 @@ If a required manual or hardware-dependent check cannot be run, say so explicitl
 - Follow `docs/PUBLISH.md` for release preparation.
 - Do not claim the project is PyPI-ready unless packaging metadata, versioning, build steps, and install docs all match reality.
 - Prefer one authoritative version location once packaging work begins.
-- Treat the current `/opt`-based install flow as legacy behavior; do not deepen that coupling unless the task is explicitly about maintaining it.
+- Treat the current `/opt`-based install flow as legacy behavior; keep it working for existing users while moving new installs toward Python-native packaging.
 
 ## Git
 
@@ -54,4 +54,5 @@ If a required manual or hardware-dependent check cannot be run, say so explicitl
 
 - This project is Linux- and sysfs-specific. Do not claim broader portability without testing.
 - Keep release and install docs synchronized with the actual supported path.
+- Upgrade and reinstall behavior for `INSTALL.sh` users matters; avoid breaking existing live installs in the name of cleanup.
 - Prefer straightforward refactors that make later packaging or testing easier, especially splitting pure logic from hardware and filesystem effects.

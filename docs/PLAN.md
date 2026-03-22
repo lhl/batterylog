@@ -10,6 +10,7 @@ Keep `batterylog` small and Linux-first, while making it suitable for distributi
 - `uvx batterylog --help` for ephemeral CLI use
 
 Packaging work should preserve the current suspend/resume logging behavior and avoid adding unnecessary framework complexity.
+It should also preserve compatibility for existing `INSTALL.sh` users instead of forcing a flag day migration.
 
 ## Current State
 
@@ -38,7 +39,7 @@ Packaging work should preserve the current suspend/resume logging behavior and a
 
 ## Phase 2: Install Story
 
-1. Replace the destructive `/opt` move with a documented, non-destructive install flow.
+1. Keep `INSTALL.sh` working for existing users, but make reinstall and upgrade behavior safer and more predictable.
 2. Support persistent installs via:
    - `pip`
    - `uv tool install`
@@ -46,8 +47,9 @@ Packaging work should preserve the current suspend/resume logging behavior and a
 3. Treat `uvx` as an ephemeral execution path:
    - useful for `--help`, inspection, and no-install smoke tests
    - not the primary path for a persistent systemd-hook deployment
-4. Provide a clean way to install or generate the `systemd` sleep hook without hardcoding a source checkout path.
-5. Update `README.md` with exact install commands for each supported path.
+4. Fix the legacy installer so it can handle reinstall and upgrade cases without breaking the existing deployment unexpectedly.
+5. Provide a clean way to install or generate the `systemd` sleep hook without hardcoding a source checkout path.
+6. Update `README.md` with exact install commands for each supported path, clearly marking `INSTALL.sh` as legacy but still supported.
 
 ## Phase 3: Testing And Release
 
@@ -83,4 +85,4 @@ Packaging work should preserve the current suspend/resume logging behavior and a
 - built artifacts pass CLI smoke checks
 - README install instructions match reality
 - `docs/PUBLISH.md` has concrete passing release commands
-- the project no longer depends on moving a source checkout into `/opt`
+- existing `INSTALL.sh` users have a documented and working upgrade path

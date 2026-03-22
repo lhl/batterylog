@@ -5,9 +5,19 @@ A simple Python app with few dependencies that reads your sysfs-class-power numb
 
 It was built to track suspend power usage for Framework laptops, but is flexible/easily extensible to do all kinds of other stuff.
 
+## Install Status
 
-# Running
-Makes sure you meet the requirements, clone the repo, and run `INSTALL.sh` - this will move the cloned repo to `/opt/batterylog` and install the script that logs into a sqlite3 DB at `/opt/batterylog/batterylog.db`.
+`INSTALL.sh` is the legacy install format. It remains supported for existing installs and upgrades.
+
+The long-term recommended install path is native Python packaging (`pip`, `uv tool install`, and `pipx`). Those distribution paths are planned but are not published yet, so `INSTALL.sh` is still the current install method for this repo today.
+
+## Legacy Install
+
+Make sure you meet the requirements, clone the repo, and run `INSTALL.sh`. This is the current supported install path in this repository.
+
+The legacy installer currently moves the cloned repo to `/opt/batterylog` and installs the suspend hook so logging writes to `/opt/batterylog/batterylog.db`.
+
+Future installer work will keep this path functioning for upgrades and reinstalls, but new packaged releases should eventually be preferred over this legacy flow.
 
 You can run `/opt/batterylog/batterylog` without any parameters and it will calculate the power usage from the last suspend/resume cycle:
 
@@ -22,13 +32,13 @@ This script should work w/ any laptop that has a battery available via `sysfs` (
 
 The expectation for this release is that the user would be comfortable writing some of their own queries or scripts if they want to do more.
 
-# Requirements
+## Requirements
 * sysfs-class-power (`/sys/class/power_supply`)
 * systemd
 * python3
 * sqlite3
 
-# Packaging
+## Packaging
 * Arch Linux AUR: [batterylog-git](https://aur.archlinux.org/packages/batterylog-git) packaged by [Stetsed](https://github.com/Stetsed)
 
 ## Other Related Tools

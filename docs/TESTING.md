@@ -49,6 +49,7 @@ If `INSTALL.sh` or the hook path changes:
 2. Confirm the install path is the one documented in `README.md`.
 3. Confirm the hook executes the installed script, not the development checkout by accident.
 4. Confirm the install step does not silently discard user data.
+5. Confirm reinstalling or upgrading an existing legacy install behaves predictably.
 
 ### Packaging Smoke Checks
 
