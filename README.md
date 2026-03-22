@@ -56,8 +56,8 @@ Administrative commands:
 ```sh
 batterylog --help
 batterylog --version
-batterylog install-hook
-batterylog uninstall-hook
+sudo batterylog install-hook
+sudo batterylog uninstall-hook
 batterylog migrate-db --from /opt/batterylog/batterylog.db --to /var/lib/batterylog/batterylog.db
 ```
 
