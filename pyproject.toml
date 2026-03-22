@@ -21,7 +21,9 @@ classifiers = [
   "Topic :: System :: Logging",
   "Topic :: Utilities",
 ]
-dependencies = []
+dependencies = [
+  "tomli>=2,<3; python_version < '3.11'",
+]
 
 [project.scripts]
 batterylog = "batterylog.cli:console_main"

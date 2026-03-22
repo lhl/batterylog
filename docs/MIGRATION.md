@@ -42,6 +42,7 @@ For installs that use the packaged CLI and a system sleep hook:
 - shared config path: `/etc/batterylog/config.toml`
 - DB and config should be root-owned but world-readable so reporting does not require `sudo`
 - `install-hook` should refuse to run from `uvx` or any other ephemeral executable path
+- minimal config contract: top-level `db_path = "/path/to/batterylog.db"`
 
 ### New User-Only CLI Installs
 

@@ -2,6 +2,8 @@ import os
 from pathlib import Path
 from typing import Mapping
 
+from batterylog.project import load_toml_file
+
 SYSTEM_CONFIG_PATH = Path("/etc/batterylog/config.toml")
 
 
@@ -47,22 +49,8 @@ def read_db_path_from_config(config_path: Path) -> Path | None:
     if not config_path.exists():
         return None
 
-    for raw_line in config_path.read_text().splitlines():
-        line = raw_line.strip()
-        if not line or line.startswith("#"):
-            continue
+    value = load_toml_file(config_path).get("db_path")
+    if not value:
+        return None
 
-        if not line.startswith("db_path"):
-            continue
-
-        _, value = line.split("=", 1)
-        value = value.strip()
-        if len(value) >= 2 and value[0] in ("'", '"') and value[-1] == value[0]:
-            value = value[1:-1]
-
-        if not value:
-            return None
-
-        return Path(value).expanduser()
-
-    return None
+    return Path(str(value)).expanduser()
