@@ -65,6 +65,49 @@ Charging sessions are reported as battery gain instead of negative usage, and su
 
 For legacy `/opt` installs, replace `batterylog` with `/opt/batterylog/batterylog.py`.
 
+## Data Storage
+
+`batterylog` stores its data in a local sqlite database.
+
+Default locations:
+
+- Packaged CLI use without a managed system hook:
+  `$XDG_STATE_HOME/batterylog/batterylog.db`
+- If `XDG_STATE_HOME` is not set:
+  `~/.local/state/batterylog/batterylog.db`
+- Managed system hook installs from `sudo batterylog install-hook`:
+  `/var/lib/batterylog/batterylog.db`
+- Legacy `/opt` installs:
+  `/opt/batterylog/batterylog.db`
+
+Path resolution precedence:
+
+- `--db /path/to/batterylog.db`
+- `BATTERYLOG_DB=/path/to/batterylog.db`
+- `/etc/batterylog/config.toml` written by `install-hook`
+- legacy sibling path for `/opt/batterylog/batterylog.py`
+- user default XDG state path
+
+Custom paths:
+
+- One-off command:
+  `batterylog --db /path/to/batterylog.db`
+- Per-shell/session override:
+  `BATTERYLOG_DB=/path/to/batterylog.db batterylog`
+- Managed system hook with a custom DB:
+  `sudo batterylog install-hook --db /path/to/batterylog.db`
+
+What is stored:
+
+- one row per `suspend` or `resume` event
+- timestamp and battery identifier
+- battery cycle count and raw charge/current/voltage snapshot values
+- derived energy/power values used for reporting
+- battery status and line-power state when available
+
+Automatic schema upgrades run in place on the active database. When a migration
+changes an existing DB, `batterylog` leaves a sibling `.bak` file behind.
+
 ## Legacy Install
 
 Make sure you meet the requirements, clone the repo, and run `INSTALL.sh`.
