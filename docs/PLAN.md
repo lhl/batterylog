@@ -40,18 +40,25 @@ It should also preserve compatibility for existing `INSTALL.sh` users instead of
    - `[project]` metadata
    - `[project.scripts]` console entry point
    - `[tool.uv]` dev dependencies
+   - keep the authoritative version in `pyproject.toml` and read it from package metadata at runtime if needed
 2. Convert the repo to a package layout with a stable CLI entry point.
    - keep `batterylog.py` as a legacy compatibility shim for upgraded `/opt` installs
+   - keep no-argument reporting behavior
+   - keep `suspend` and `resume` available for hook use
+   - add new admin commands such as hook install/uninstall and DB migration as additive CLI surface
 3. Separate installed code from mutable runtime state:
    - the sqlite database must not live inside the package or tool environment
    - choose a default path that works for a root-run systemd hook and a user-run reporting command
    - keep a simple override for local testing and development
+   - use `/etc/batterylog/config.toml` for hook-backed system installs so CLI reporting and the hook share the same DB path
    - new system installs should default to `/var/lib/batterylog/batterylog.db`
    - user-only CLI mode should default to `$XDG_STATE_HOME/batterylog/batterylog.db`
    - existing legacy installs should keep using `/opt/batterylog/batterylog.db` unless the user explicitly migrates
 4. Package non-code assets correctly:
    - schema file
    - systemd hook template or generated hook content
+   - package a generated hook path around the current resolved `batterylog` executable plus an explicit DB path
+   - write hook-backed system config to `/etc/batterylog/config.toml`
 5. Add a single authoritative version source and use it consistently in release metadata.
 6. Add a real migration mechanism for sqlite schema changes:
    - track schema version with `PRAGMA user_version`
@@ -66,6 +73,7 @@ It should also preserve compatibility for existing `INSTALL.sh` users instead of
    - `pip`
    - `uv tool install`
    - `pipx`
+   - document that hook-backed system installs should prefer a root-owned stable executable path
 3. Treat `uvx` as an ephemeral execution path:
    - useful for `--help`, inspection, and no-install smoke tests
    - not the primary path for a persistent systemd-hook deployment
@@ -111,11 +119,13 @@ See `docs/MIGRATION.md` for the detailed plan. The short version:
 - No automatic legacy DB moves on upgrade.
 - Automatic in-place schema upgrades for old or unversioned DBs are expected.
 - New packaged system installs use `/var/lib/batterylog/batterylog.db` by default.
+- Hook-backed packaged installs share DB configuration via `/etc/batterylog/config.toml`.
 - New user-only installs use XDG state by default.
 - Legacy `/opt/batterylog/batterylog.db` installs remain supported in place.
 - Path moves must be explicit, backed up, and reversible.
 - Schema upgrades must be automatic, backed up, and reversible.
 - Migrations should leave a `.bak` file in place rather than deleting the backup automatically.
+- The backup path should be `<db path>.bak`, refreshed on each migration attempt, and left behind afterward.
 
 ## Exit Criteria For The First PyPI Release
 

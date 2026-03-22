@@ -38,6 +38,8 @@ For installs that use the packaged CLI and a system sleep hook:
 - command entry point: `batterylog`
 - default database path: `/var/lib/batterylog/batterylog.db`
 - hook installation managed by explicit CLI commands
+- prefer a root-owned stable executable path for the installed command
+- shared config path: `/etc/batterylog/config.toml`
 
 ### New User-Only CLI Installs
 
@@ -76,6 +78,7 @@ Safety requirements:
 - do not delete the old DB
 - do not silently move the DB to `/var/lib`
 - do not require the user to learn the packaged CLI just to keep their current setup working
+- when hook-backed packaged installs are introduced, keep CLI reporting aligned with the configured DB path via `/etc/batterylog/config.toml`
 
 ### 2. Explicit Database Location Migration
 
@@ -91,7 +94,7 @@ Recommended behavior:
 
 1. validate source DB exists and is readable
 2. validate destination parent directory exists or can be created
-3. create a `.bak` backup before making changes and leave it in place
+3. create `<db path>.bak` before making changes and leave it in place
 4. copy data to the destination instead of moving first
 5. verify the copied DB opens and contains the expected schema
 6. leave the source DB untouched unless the user explicitly asks to retire it
@@ -138,8 +141,9 @@ Any DB migration command or schema migration path should follow this order:
    - confirm writable destination or backup location
    - confirm enough free space for a copied DB plus backup
 2. Backup
-   - create a `.bak` backup before altering anything
+   - create `<db path>.bak` before altering anything
    - preserve file ownership and mode where relevant
+   - refresh the `.bak` file on each migration attempt
    - leave the `.bak` file in place after success or failure
 3. Migration
    - run the copy or schema change

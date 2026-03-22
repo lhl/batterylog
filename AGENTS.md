@@ -11,6 +11,8 @@
 - `README.md`: user-facing overview
 - `docs/README.md`: index of development docs
 - `docs/PLAN.md`: active implementation and packaging plan
+- `docs/IMPLEMENTATION.md`: active execution checklist
+- `docs/MIGRATION.md`: install, database, and schema migration plan
 - `docs/TESTING.md`: validation commands and manual smoke checks
 - `docs/PUBLISH.md`: release checklist and packaging gate
 
@@ -18,6 +20,7 @@
 
 - Run `git status -sb` before editing and before committing.
 - For larger changes, align with `docs/PLAN.md` before expanding scope.
+- For multi-step execution work, keep `docs/IMPLEMENTATION.md` current.
 - Keep changes small and easy to verify.
 - Leave unrelated dirty or untracked files alone.
 - Do not edit ad hoc note files like `RESEARCH.md` or `TODO.md` unless the task actually requires it.

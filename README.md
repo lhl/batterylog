@@ -23,10 +23,10 @@ The legacy installer currently moves the cloned repo to `/opt/batterylog` and in
 
 Future installer work will keep this path functioning for upgrades and reinstalls, but new packaged releases should eventually be preferred over this legacy flow.
 
-You can run `/opt/batterylog/batterylog` without any parameters and it will calculate the power usage from the last suspend/resume cycle:
+You can run `/opt/batterylog/batterylog.py` without any parameters and it will calculate the power usage from the last suspend/resume cycle:
 
 ```
-$ /opt/batterylog/batterylog
+$ /opt/batterylog/batterylog.py
 Slept for 8.72 hours
 Used 6.10 Wh, an average rate of 0.70 W
 For your 53.67 Wh battery this is 1.30%/hr or 31.29%/day
