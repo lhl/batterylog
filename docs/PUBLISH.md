@@ -13,6 +13,13 @@ As of 2026-03-22, this repo is not yet ready for PyPI:
 
 Do not publish to PyPI until those gaps are addressed.
 
+## Release Track
+
+- Historical legacy baseline: tag commit `d15c5d6` as `v0.1` if we want a clean pre-doc reference point.
+- Optional maintenance release: `v0.1.1` if we decide to ship legacy-safe bug fixes before the packaging refactor lands.
+- Main upcoming release target: `v0.2` for the packaged CLI, hook management, migration behavior, and related bug fixes.
+- Do not create speculative release entries for `v0.1.1` if we are not actually shipping it.
+
 ## Pre-Release Checklist
 
 Before cutting any release:

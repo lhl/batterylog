@@ -40,6 +40,8 @@ For installs that use the packaged CLI and a system sleep hook:
 - hook installation managed by explicit CLI commands
 - prefer a root-owned stable executable path for the installed command
 - shared config path: `/etc/batterylog/config.toml`
+- DB and config should be root-owned but world-readable so reporting does not require `sudo`
+- `install-hook` should refuse to run from `uvx` or any other ephemeral executable path
 
 ### New User-Only CLI Installs
 
@@ -48,6 +50,18 @@ For non-hook, user-local usage:
 - command entry point: `batterylog`
 - default database path: `$XDG_STATE_HOME/batterylog/batterylog.db`
 - fallback when `XDG_STATE_HOME` is unset: `~/.local/state/batterylog/batterylog.db`
+
+## DB Path Resolution Precedence
+
+The runtime should resolve the active DB path in this order:
+
+1. `--db`
+2. `BATTERYLOG_DB`
+3. `/etc/batterylog/config.toml` `db_path`
+4. legacy shim default: sibling `batterylog.db`
+5. user default: `$XDG_STATE_HOME/batterylog/batterylog.db`
+
+For hook-backed packaged installs, `install-hook` should write `/etc/batterylog/config.toml` so the packaged CLI and the sleep hook resolve the same DB path.
 
 ## Migration Principles
 
@@ -59,6 +73,7 @@ For non-hook, user-local usage:
 - Keep old rows readable after schema upgrades.
 - Make path-migration commands explicit and admin-invoked.
 - Allow schema migrations to run automatically on normal startup when needed.
+- Prefer root-only write with world-readable DB/config permissions for hook-backed installs.
 
 ## Planned Migration Surfaces
 
@@ -111,6 +126,8 @@ Planned mechanism:
 - migrate forward in small additive steps
 - support older DBs that only have the original `log` table columns
 - treat `user_version = 0` or missing version state as a valid upgrade input
+- define migration `1` as the current schema baseline with no table changes beyond setting `user_version = 1`
+- reserve later migrations such as charger-state columns for subsequent versions
 
 Expected behavior:
 

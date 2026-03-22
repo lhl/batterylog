@@ -12,6 +12,13 @@ Keep `batterylog` small and Linux-first, while making it suitable for distributi
 Packaging work should preserve the current suspend/resume logging behavior and avoid adding unnecessary framework complexity.
 It should also preserve compatibility for existing `INSTALL.sh` users instead of forcing a flag day migration.
 
+## Release Sequencing
+
+- Treat the pre-doc legacy baseline commit `d15c5d6` as the historical `v0.1` tag point.
+- If we cut a maintenance release on the legacy codepath before the packaging/refactor work ships, use `v0.1.1`.
+- The main near-term target is `v0.2`, which can include the packaging refactor, compatibility work, and bug fixes that make sense to land together.
+- Do not force an intermediate release only to keep bug fixes in a separate bucket; ship coherent validated releases.
+
 ## Backward Compatibility Requirements
 
 - Existing legacy behavior is a hard compatibility surface:
@@ -41,19 +48,29 @@ It should also preserve compatibility for existing `INSTALL.sh` users instead of
    - `[project.scripts]` console entry point
    - `[tool.uv]` dev dependencies
    - keep the authoritative version in `pyproject.toml` and read it from package metadata at runtime if needed
+   - use a `src/batterylog/` package layout
 2. Convert the repo to a package layout with a stable CLI entry point.
-   - keep `batterylog.py` as a legacy compatibility shim for upgraded `/opt` installs
+   - keep `batterylog.py` as a thin legacy compatibility shim for upgraded `/opt` installs
+   - have the shim delegate into the packaged implementation rather than duplicating logic
+   - have the shim force legacy defaults such as sibling DB resolution
    - keep no-argument reporting behavior
    - keep `suspend` and `resume` available for hook use
+   - add `--version` using package metadata and preserve it through the legacy shim
    - add new admin commands such as hook install/uninstall and DB migration as additive CLI surface
 3. Separate installed code from mutable runtime state:
    - the sqlite database must not live inside the package or tool environment
-   - choose a default path that works for a root-run systemd hook and a user-run reporting command
+   - use explicit DB path precedence:
+     1. `--db`
+     2. `BATTERYLOG_DB`
+     3. `/etc/batterylog/config.toml` `db_path`
+     4. legacy shim default: sibling `batterylog.db`
+     5. user default: `$XDG_STATE_HOME/batterylog/batterylog.db`
    - keep a simple override for local testing and development
    - use `/etc/batterylog/config.toml` for hook-backed system installs so CLI reporting and the hook share the same DB path
    - new system installs should default to `/var/lib/batterylog/batterylog.db`
    - user-only CLI mode should default to `$XDG_STATE_HOME/batterylog/batterylog.db`
    - existing legacy installs should keep using `/opt/batterylog/batterylog.db` unless the user explicitly migrates
+   - for hook-backed installs, prefer root-owned but world-readable state so normal users can run reports without `sudo`
 4. Package non-code assets correctly:
    - schema file
    - systemd hook template or generated hook content
@@ -64,6 +81,7 @@ It should also preserve compatibility for existing `INSTALL.sh` users instead of
    - track schema version with `PRAGMA user_version`
    - support additive migrations for future columns such as charger state
    - transparently migrate older or unversioned DBs in place
+   - treat migration `1` as the current-schema baseline rather than bundling in new feature columns
    - do not rely on `CREATE TABLE IF NOT EXISTS` for upgrades
 
 ## Phase 2: Install Story
@@ -77,6 +95,7 @@ It should also preserve compatibility for existing `INSTALL.sh` users instead of
 3. Treat `uvx` as an ephemeral execution path:
    - useful for `--help`, inspection, and no-install smoke tests
    - not the primary path for a persistent systemd-hook deployment
+   - `install-hook` should refuse to run from `uvx` or any other ephemeral executable path
 4. Fix the legacy installer so it can handle reinstall and upgrade cases without breaking the existing deployment unexpectedly.
 5. Provide a clean way to install or generate the `systemd` sleep hook without hardcoding a source checkout path.
 6. Update `README.md` with exact install commands for each supported path, clearly marking `INSTALL.sh` as legacy but still supported.
@@ -106,6 +125,7 @@ It should also preserve compatibility for existing `INSTALL.sh` users instead of
 - Change the last-cycle report so net-charge sessions are shown as battery gain instead of negative `Used X Wh`.
 - Add a `history` or `summary` mode for recent suspend sessions, with a filter for net-discharge cycles.
 - Keep adjacent `suspend -> resume` pairing as the basis for future history and summary output.
+- Fold packaging-adjacent bug fixes into the release where they make the most sense rather than preserving artificial boundaries.
 
 ### Logging
 
