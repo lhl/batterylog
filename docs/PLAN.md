@@ -21,6 +21,7 @@ It should also preserve compatibility for existing `INSTALL.sh` users instead of
 - `batterylog.py` is retained for legacy installs only. New packaging and docs should center the packaged `batterylog` command.
 - Existing `/opt/batterylog` installs must keep working across upgrades.
 - Do not silently move an existing legacy database to a new default path.
+- Transparent in-place schema upgrades are allowed when a DB version is old or missing.
 - New features should be additive commands or flags, not behavior changes to the existing commands.
 
 ## Current State
@@ -30,6 +31,7 @@ It should also preserve compatibility for existing `INSTALL.sh` users instead of
 - The database path is coupled to the script directory
 - No `pyproject.toml`, package metadata, or authoritative version source
 - Validation is currently smoke-test driven rather than automated-test driven
+- There is no real schema migration system yet; startup only runs `CREATE TABLE IF NOT EXISTS`
 
 ## Phase 1: Packaging Foundation
 
@@ -44,10 +46,18 @@ It should also preserve compatibility for existing `INSTALL.sh` users instead of
    - the sqlite database must not live inside the package or tool environment
    - choose a default path that works for a root-run systemd hook and a user-run reporting command
    - keep a simple override for local testing and development
+   - new system installs should default to `/var/lib/batterylog/batterylog.db`
+   - user-only CLI mode should default to `$XDG_STATE_HOME/batterylog/batterylog.db`
+   - existing legacy installs should keep using `/opt/batterylog/batterylog.db` unless the user explicitly migrates
 4. Package non-code assets correctly:
    - schema file
    - systemd hook template or generated hook content
 5. Add a single authoritative version source and use it consistently in release metadata.
+6. Add a real migration mechanism for sqlite schema changes:
+   - track schema version with `PRAGMA user_version`
+   - support additive migrations for future columns such as charger state
+   - transparently migrate older or unversioned DBs in place
+   - do not rely on `CREATE TABLE IF NOT EXISTS` for upgrades
 
 ## Phase 2: Install Story
 
@@ -62,6 +72,7 @@ It should also preserve compatibility for existing `INSTALL.sh` users instead of
 4. Fix the legacy installer so it can handle reinstall and upgrade cases without breaking the existing deployment unexpectedly.
 5. Provide a clean way to install or generate the `systemd` sleep hook without hardcoding a source checkout path.
 6. Update `README.md` with exact install commands for each supported path, clearly marking `INSTALL.sh` as legacy but still supported.
+7. Document the migration and rollback workflow in `docs/MIGRATION.md`.
 
 ## Phase 3: Testing And Release
 
@@ -77,6 +88,7 @@ It should also preserve compatibility for existing `INSTALL.sh` users instead of
    - verify install paths for `pip`, `uv tool install`, and `pipx`
    - verify a no-install `uvx` help/smoke path
    - verify legacy installs still support `batterylog.py suspend`, `batterylog.py resume`, and zero-argument reporting
+   - verify automatic schema upgrade, backup, path-migration, and rollback behavior for legacy databases
 4. Keep `docs/PUBLISH.md` aligned with the real release commands and validation matrix.
 
 ## Product Backlog
@@ -92,6 +104,18 @@ It should also preserve compatibility for existing `INSTALL.sh` users instead of
 - Keep current suspend/resume event capture unchanged while packaging work lands.
 - Log AC or charger state at both suspend and resume so charging sessions are explicit instead of inferred.
 
+## Migration Strategy
+
+See `docs/MIGRATION.md` for the detailed plan. The short version:
+
+- No automatic legacy DB moves on upgrade.
+- Automatic in-place schema upgrades for old or unversioned DBs are expected.
+- New packaged system installs use `/var/lib/batterylog/batterylog.db` by default.
+- New user-only installs use XDG state by default.
+- Legacy `/opt/batterylog/batterylog.db` installs remain supported in place.
+- Path moves must be explicit, backed up, and reversible.
+- Schema upgrades must be automatic, backed up, and reversible.
+
 ## Exit Criteria For The First PyPI Release
 
 - `batterylog` installs cleanly via `pip`, `uv tool install`, and `pipx`
@@ -100,3 +124,4 @@ It should also preserve compatibility for existing `INSTALL.sh` users instead of
 - `docs/PUBLISH.md` has concrete passing release commands
 - existing `INSTALL.sh` users have a documented and working upgrade path
 - legacy `batterylog.py` command semantics remain unchanged
+- migration and rollback behavior is documented and tested

@@ -22,6 +22,7 @@ Before cutting any release:
 3. Re-read `README.md` and confirm install and usage instructions match the code.
 4. Confirm release notes clearly state what changed and any system requirements.
 5. If packaging files exist, confirm the version is updated in the authoritative location only.
+6. If install paths, DB defaults, or schema changed, run the migration checks from `docs/MIGRATION.md`, including automatic upgrade from an old or unversioned DB.
 
 ## Git Release Steps
 
@@ -51,6 +52,8 @@ Do not run a PyPI upload until all of the following exist and are verified:
 5. versioned release notes
 6. smoke-tested install paths for `pip`, `uv tool install`, and `pipx`
 7. a no-install `uvx` or equivalent help/smoke path for quick verification
+8. documented migration and rollback behavior for any install-path, DB-path, or schema change
+9. verified transparent schema upgrade behavior for old or unversioned DBs
 
 Recommended commands once packaging is in place:
 

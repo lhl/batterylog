@@ -56,4 +56,5 @@ If a required manual or hardware-dependent check cannot be run, say so explicitl
 - Keep release and install docs synchronized with the actual supported path.
 - Upgrade and reinstall behavior for `INSTALL.sh` users matters; avoid breaking existing live installs in the name of cleanup.
 - Backward compatibility for existing `batterylog.py` behavior is a requirement; treat legacy CLI semantics and `/opt` installs as supported upgrade surfaces.
+- DB path moves must be explicit; schema upgrades for old or unversioned DBs should be transparent, backed up, and reversible.
 - Prefer straightforward refactors that make later packaging or testing easier, especially splitting pure logic from hardware and filesystem effects.

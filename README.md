@@ -12,6 +12,8 @@ It was built to track suspend power usage for Framework laptops, but is flexible
 The long-term recommended install path is native Python packaging (`pip`, `uv tool install`, and `pipx`). Those distribution paths are planned but are not published yet, so `INSTALL.sh` is still the current install method for this repo today.
 
 Existing legacy command behavior is part of the upgrade contract: `batterylog.py suspend`, `batterylog.py resume`, and the zero-argument report should keep working for upgraded legacy installs.
+Existing legacy data is also part of that contract: upgrades should not silently relocate or replace `/opt/batterylog/batterylog.db`.
+If schema upgrades are needed in the future, they should happen transparently in place for the active database rather than requiring manual intervention.
 
 ## Legacy Install
 

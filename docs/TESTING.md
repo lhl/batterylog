@@ -60,6 +60,17 @@ For changes that affect packaging, install paths, or CLI entry points, also conf
 3. `batterylog.py` with no arguments still prints the last-cycle report.
 4. An existing `/opt/batterylog/batterylog.db` install is not silently moved or broken during upgrade.
 
+### Migration Checks
+
+For changes that affect DB paths or schema, also confirm:
+
+1. an existing legacy DB can still be opened in place
+2. old or unversioned DBs transparently migrate in place when opened
+3. any explicit path-migration command creates a backup before mutating state
+4. migrated DBs pass basic sqlite open/query checks
+5. row counts remain stable across a path migration
+6. rollback instructions are correct if verification fails
+
 ### Packaging Smoke Checks
 
 Once packaging exists, release validation should also confirm:
@@ -75,6 +86,7 @@ Once packaging exists, release validation should also confirm:
 - `schema.sql` changes: run the schema check and verify inserts/queries in `batterylog.py` still match.
 - `batterylog.py` changes: run `py_compile` plus the relevant manual smoke check.
 - Packaging or release changes: run the checks listed in `docs/PUBLISH.md`.
+- DB path or schema changes: run the migration checks from `docs/MIGRATION.md`.
 
 ## Reporting
 
