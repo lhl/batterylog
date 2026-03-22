@@ -16,9 +16,9 @@ Do not publish to PyPI until those gaps are addressed.
 ## Release Track
 
 - Historical legacy baseline: tag commit `d15c5d6` as `v0.1` if we want a clean pre-doc reference point.
-- Optional maintenance release: `v0.1.1` if we decide to ship legacy-safe bug fixes before the packaging refactor lands.
-- Main upcoming release target: `v0.2` for the packaged CLI, hook management, migration behavior, and related bug fixes.
-- Do not create speculative release entries for `v0.1.1` if we are not actually shipping it.
+- Do not plan a separate `v0.1.1` maintenance release.
+- Main upcoming release target: a legacy-safe `v0.2` for the packaged CLI, hook management, migration behavior, and the related bug fixes that fit naturally into that work.
+- Do not create speculative release entries for versions we are not actually shipping.
 
 ## Pre-Release Checklist
 

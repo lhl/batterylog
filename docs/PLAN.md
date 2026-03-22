@@ -15,9 +15,9 @@ It should also preserve compatibility for existing `INSTALL.sh` users instead of
 ## Release Sequencing
 
 - Treat the pre-doc legacy baseline commit `d15c5d6` as the historical `v0.1` tag point.
-- If we cut a maintenance release on the legacy codepath before the packaging/refactor work ships, use `v0.1.1`.
-- The main near-term target is `v0.2`, which can include the packaging refactor, compatibility work, and bug fixes that make sense to land together.
-- Do not force an intermediate release only to keep bug fixes in a separate bucket; ship coherent validated releases.
+- Do not plan a separate `v0.1.1` maintenance release.
+- The main near-term target is a legacy-safe `v0.2`, which can include the packaging refactor, compatibility work, and bug fixes that make sense to land together.
+- Fold bug fixes into the implementation phases where they make the most sense instead of preserving artificial release boundaries.
 
 ## Backward Compatibility Requirements
 
