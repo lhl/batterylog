@@ -51,6 +51,15 @@ If `INSTALL.sh` or the hook path changes:
 4. Confirm the install step does not silently discard user data.
 5. Confirm reinstalling or upgrading an existing legacy install behaves predictably.
 
+### Legacy Compatibility Checks
+
+For changes that affect packaging, install paths, or CLI entry points, also confirm:
+
+1. `batterylog.py suspend` still logs correctly for a legacy install.
+2. `batterylog.py resume` still logs correctly for a legacy install.
+3. `batterylog.py` with no arguments still prints the last-cycle report.
+4. An existing `/opt/batterylog/batterylog.db` install is not silently moved or broken during upgrade.
+
 ### Packaging Smoke Checks
 
 Once packaging exists, release validation should also confirm:

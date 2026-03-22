@@ -12,6 +12,17 @@ Keep `batterylog` small and Linux-first, while making it suitable for distributi
 Packaging work should preserve the current suspend/resume logging behavior and avoid adding unnecessary framework complexity.
 It should also preserve compatibility for existing `INSTALL.sh` users instead of forcing a flag day migration.
 
+## Backward Compatibility Requirements
+
+- Existing legacy behavior is a hard compatibility surface:
+  - `batterylog.py suspend`
+  - `batterylog.py resume`
+  - `batterylog.py` with no arguments for the last-cycle report
+- `batterylog.py` is retained for legacy installs only. New packaging and docs should center the packaged `batterylog` command.
+- Existing `/opt/batterylog` installs must keep working across upgrades.
+- Do not silently move an existing legacy database to a new default path.
+- New features should be additive commands or flags, not behavior changes to the existing commands.
+
 ## Current State
 
 - One Python script (`batterylog.py`) plus `schema.sql` and `batterylog.system-sleep`
@@ -28,6 +39,7 @@ It should also preserve compatibility for existing `INSTALL.sh` users instead of
    - `[project.scripts]` console entry point
    - `[tool.uv]` dev dependencies
 2. Convert the repo to a package layout with a stable CLI entry point.
+   - keep `batterylog.py` as a legacy compatibility shim for upgraded `/opt` installs
 3. Separate installed code from mutable runtime state:
    - the sqlite database must not live inside the package or tool environment
    - choose a default path that works for a root-run systemd hook and a user-run reporting command
@@ -64,6 +76,7 @@ It should also preserve compatibility for existing `INSTALL.sh` users instead of
    - run `batterylog --help` from the built artifact
    - verify install paths for `pip`, `uv tool install`, and `pipx`
    - verify a no-install `uvx` help/smoke path
+   - verify legacy installs still support `batterylog.py suspend`, `batterylog.py resume`, and zero-argument reporting
 4. Keep `docs/PUBLISH.md` aligned with the real release commands and validation matrix.
 
 ## Product Backlog
@@ -86,3 +99,4 @@ It should also preserve compatibility for existing `INSTALL.sh` users instead of
 - README install instructions match reality
 - `docs/PUBLISH.md` has concrete passing release commands
 - existing `INSTALL.sh` users have a documented and working upgrade path
+- legacy `batterylog.py` command semantics remain unchanged

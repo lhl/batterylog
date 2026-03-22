@@ -55,4 +55,5 @@ If a required manual or hardware-dependent check cannot be run, say so explicitl
 - This project is Linux- and sysfs-specific. Do not claim broader portability without testing.
 - Keep release and install docs synchronized with the actual supported path.
 - Upgrade and reinstall behavior for `INSTALL.sh` users matters; avoid breaking existing live installs in the name of cleanup.
+- Backward compatibility for existing `batterylog.py` behavior is a requirement; treat legacy CLI semantics and `/opt` installs as supported upgrade surfaces.
 - Prefer straightforward refactors that make later packaging or testing easier, especially splitting pure logic from hardware and filesystem effects.
