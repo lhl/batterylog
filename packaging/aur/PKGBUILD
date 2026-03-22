@@ -1,0 +1,39 @@
+# Reference PKGBUILD for the current legacy /opt batterylog layout.
+# This is intended as a maintainer aid for `batterylog-git`, not as a second
+# release channel inside the repo.
+
+# Maintainer: Stetsed <aur.arch@stetsed.xyz>
+pkgname=batterylog-git
+pkgver=r0.unknown
+pkgrel=1
+pkgdesc="Battery logging tool (git version)"
+arch=('any')
+url="https://github.com/lhl/batterylog"
+license=('GPL-3.0')
+depends=('python')
+makedepends=('git')
+source=("git+https://github.com/lhl/batterylog.git")
+sha256sums=('SKIP')
+
+pkgver() {
+	cd "$srcdir/batterylog"
+	printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+
+build() {
+	cd "$srcdir/batterylog"
+}
+
+package() {
+	cd "$srcdir/batterylog"
+
+	install -Dm755 batterylog.system-sleep "$pkgdir/usr/lib/systemd/system-sleep/batterylog"
+	install -Dm755 batterylog.py "$pkgdir/opt/batterylog/batterylog.py"
+	install -Dm644 pyproject.toml "$pkgdir/opt/batterylog/pyproject.toml"
+	install -Dm644 schema.sql "$pkgdir/opt/batterylog/schema.sql"
+	install -Dm644 README.md "$pkgdir/usr/share/doc/$pkgname/README.md"
+	install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+
+	install -d "$pkgdir/opt/batterylog/src"
+	cp -r src/batterylog "$pkgdir/opt/batterylog/src/batterylog"
+}

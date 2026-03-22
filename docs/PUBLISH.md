@@ -31,6 +31,7 @@ Before cutting any release:
 4. Confirm release notes clearly state what changed and any system requirements.
 5. If packaging files exist, confirm the version is updated in the authoritative location only.
 6. If install paths, DB defaults, or schema changed, run the migration checks from `docs/MIGRATION.md`, including automatic upgrade from an old or unversioned DB.
+7. If release work touches install layout or packaging behavior, sanity-check the known `batterylog-git` AUR package or refresh `packaging/aur/PKGBUILD`.
 
 ## Git Release Steps
 

@@ -117,6 +117,10 @@ It should also preserve compatibility for existing `INSTALL.sh` users instead of
    - verify legacy installs still support `batterylog.py suspend`, `batterylog.py resume`, and zero-argument reporting
    - verify automatic schema upgrade, backup, path-migration, and rollback behavior for legacy databases
 4. Keep `docs/PUBLISH.md` aligned with the real release commands and validation matrix.
+5. Sanity-check known downstream packaging:
+   - verify the current `batterylog-git` AUR package still works with the legacy `/opt/batterylog` path
+   - avoid shipping a pre-created DB in the reference AUR packaging
+   - keep a cleaned-up reference PKGBUILD in `packaging/aur/PKGBUILD`
 
 ## Product Backlog
 

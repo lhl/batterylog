@@ -44,6 +44,7 @@ The expectation for this release is that the user would be comfortable writing s
 
 ## Packaging
 * Arch Linux AUR: [batterylog-git](https://aur.archlinux.org/packages/batterylog-git) packaged by [Stetsed](https://github.com/Stetsed)
+* Reference AUR packaging for the current tree: `packaging/aur/PKGBUILD`
 
 ## Other Related Tools
 * [powertop](https://github.com/fenrus75/powertop) - power usage realtime monitoring swiss army knife; can export reports

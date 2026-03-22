@@ -82,6 +82,14 @@ Once packaging exists, release validation should also confirm:
 3. persistent installs work via `pip`, `uv tool install`, and `pipx`
 4. an ephemeral `uvx` help or smoke path works for quick verification
 
+### AUR Sanity Check
+
+For changes that affect install layout, legacy shims, or packaging:
+
+1. sanity-check the current `batterylog-git` PKGBUILD against the current tree
+2. confirm the AUR-style `/opt/batterylog` package layout still runs `batterylog.py`
+3. confirm the reference `packaging/aur/PKGBUILD` does not ship a pre-created `batterylog.db`
+
 ### Migration Smoke Checks
 
 For `migrate-db` or schema-version changes, also confirm:

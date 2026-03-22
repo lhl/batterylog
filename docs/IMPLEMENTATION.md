@@ -61,3 +61,12 @@ Use this as the active execution checklist for packaging, hook management, and m
 - [ ] Add legacy-install upgrade tests covering `batterylog.py suspend`, `resume`, and no-arg reporting
 - [x] Add migration tests covering automatic schema upgrade, `.bak` retention, and rollback
 - [ ] Update `README.md`, `docs/TESTING.md`, and `docs/PUBLISH.md` as implementation lands
+
+## Phase 7: Ecosystem Sanity
+
+- [x] Sanity-check the current `batterylog-git` AUR package against the current tree
+- [x] Confirm the current AUR package still works through the legacy `/opt/batterylog` path
+- [x] Capture the packaging divergence: the current AUR package ships a pre-created unversioned DB and bypasses managed hook/config generation
+- [x] Add a cleaned-up reference PKGBUILD under `packaging/aur/PKGBUILD`
+- [x] Keep the reference AUR package on the legacy `/opt/batterylog` layout for compatibility
+- [x] Avoid shipping a pre-created database in the reference AUR package
