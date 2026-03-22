@@ -3,35 +3,60 @@ Linux laptop battery logging tool
 
 A simple Python app with few dependencies that reads your sysfs-class-power numbers and records them to a local sqlite3 db with an "event" tag.
 
-It was built to track suspend power usage for Framework laptops, but is flexible/easily extensible to do all kinds of other stuff.
+It was built to track suspend power usage for Framework laptops, but it should work on other Linux laptops that expose battery data through `/sys/class/power_supply`.
 
 ## Install Status
 
 `INSTALL.sh` is the legacy install format. It remains supported for existing installs and upgrades.
 
-The long-term recommended install path is native Python packaging (`pip`, `uv tool install`, and `pipx`). Those distribution paths are now smoke-tested in this repo, but there is not a published PyPI release yet, so `INSTALL.sh` is still the current install method documented here today.
+The long-term recommended install path is native Python packaging (`pip`, `uv tool install`, and `pipx`). Those paths are now smoke-tested in this repo, but there is not a published PyPI release yet, so `INSTALL.sh` is still the current install method documented here today.
 
 Existing legacy command behavior is part of the upgrade contract: `batterylog.py suspend`, `batterylog.py resume`, and the zero-argument report should keep working for upgraded legacy installs.
 Existing legacy data is also part of that contract: upgrades should not silently relocate or replace `/opt/batterylog/batterylog.db`.
 If schema upgrades are needed in the future, they should happen transparently in place for the active database rather than requiring manual intervention.
 
+## Quick Start
+
+Clone the repo and run the legacy installer:
+
+```sh
+git clone https://github.com/lhl/batterylog.git
+cd batterylog
+./INSTALL.sh
+```
+
+`INSTALL.sh` uses `sudo` internally, stages the project into `/opt/batterylog`, and installs the suspend/resume hook.
+
+After install, the legacy command path is:
+
+```sh
+/opt/batterylog/batterylog.py
+```
+
 ## Usage
 
-The default invocation still reports the most recent complete suspend/resume cycle:
+The default invocation reports the most recent complete suspend/resume cycle:
 
 ```sh
-batterylog
+/opt/batterylog/batterylog.py
 ```
 
-Recent-cycle views are now available as additive commands:
+Recent-cycle views:
 
 ```sh
-batterylog history --limit 10
-batterylog summary --limit 10
-batterylog history --discharging-only
+/opt/batterylog/batterylog.py history --limit 10
+/opt/batterylog/batterylog.py summary --limit 10
+/opt/batterylog/batterylog.py history --discharging-only
 ```
 
-Charging sessions are now reported as battery gain instead of negative usage, and suspend/resume rows now record charger-state context for later inspection.
+Administrative commands:
+
+```sh
+/opt/batterylog/batterylog.py --version
+/opt/batterylog/batterylog.py migrate-db --from /opt/batterylog/batterylog.db --to /var/lib/batterylog/batterylog.db
+```
+
+Charging sessions are reported as battery gain instead of negative usage, and suspend/resume rows now record charger-state context for later inspection.
 
 ## Legacy Install
 
@@ -50,37 +75,53 @@ Used 6.10 Wh, an average rate of 0.70 W
 For your 53.67 Wh battery this is 1.30%/hr or 31.29%/day
 ```
 
-This script should work w/ any laptop that has a battery available via `sysfs` (it looks for the first battery located by `/sys/class/power_supply/BAT*`). This script has currently only been tested with a Framework laptop and the script doesn't check that all values exist (some batteries don't report some values). It's small enough though that it should be easy to debug/modify for your own purposes. Also, while it stores and keeps all historical values in sqlite, it doesn't really do much else, like have a UI for exposing previous sleeps, etc yet.
+This script looks for the first battery at `/sys/class/power_supply/BAT*`. It has currently only been tested with a Framework laptop, and some machines may not expose every value it expects. The tool is intentionally small and CLI-first: it stores the raw suspend/resume history in sqlite and exposes a few practical reporting commands on top.
 
-The expectation for this release is still that the user is comfortable with a CLI-first workflow. The new `history` and `summary` commands cover the most common review use cases without adding a heavier UI layer.
+The new `history` and `summary` commands cover the most common review use cases without adding a heavier UI layer.
+
+## Native Python Installs
+
+There is not a published PyPI release yet, but native Python installs from a checkout now work for local testing:
+
+```sh
+pip install .
+uv tool install .
+pipx install .
+```
+
+Those paths are useful for local CLI use. For a persistent system suspend hook, the legacy `INSTALL.sh` path is still the simplest documented setup in this repo today.
 
 ## Requirements
-* sysfs-class-power (`/sys/class/power_supply`)
-* systemd
-* python3
-* sqlite3
+
+- Linux with battery data exposed through `/sys/class/power_supply`
+- systemd
+- Python `3.10+`
+- `sqlite3` CLI is optional, but useful for manual inspection/debugging
 
 ## Packaging
-* Arch Linux AUR: [batterylog-git](https://aur.archlinux.org/packages/batterylog-git) packaged by [Stetsed](https://github.com/Stetsed)
-* Reference AUR packaging for the current tree: `packaging/aur/PKGBUILD`
-* Packaging smoke validation for this tree: `python3 scripts/smoke_packaging.py`
+
+- Arch Linux AUR: [batterylog-git](https://aur.archlinux.org/packages/batterylog-git) packaged by [Stetsed](https://github.com/Stetsed)
+- Reference AUR packaging for the current tree: `packaging/aur/PKGBUILD`
 
 ## Other Related Tools
-* [powertop](https://github.com/fenrus75/powertop) - power usage realtime monitoring swiss army knife; can export reports
-* [powerstat](https://github.com/ColinIanKing/powerstat) - most useful tool for measuring idle power usage; generates vmstat-style output and TUI histograms
-* [turbostat](https://www.linux.org/docs/man8/turbostat.html) - state/temp/clock/power info for Intel CPUs
-* [battery-stats](https://github.com/petterreinholdtsen/battery-stats) - this didn't work for me, but in theory does long-term battery logging/capture
-* [batstat](https://github.com/petterreinholdtsen/battery-stats) - small C app that does continuous logging of battery info into a sqlite DB
-* [uPower](https://upower.freedesktop.org/) - D-Bus layer that stores power history/stats
-* [GNOME Power Statistics](https://www.linux.org/docs/man8/turbostat.html) - GUI that [uses uPower stats](https://askubuntu.com/questions/139202/how-can-i-reset-the-battery-statistics-for-the-powermanager)
-* [powir](https://github.com/SlapBot/powir) - Windows app, but lots of nice features, worth mentioning
-* [SleepStudy](https://docs.microsoft.com/en-us/windows-hardware/design/device-experiences/modern-standby-sleepstudy) - Windows built-in that also [generates cool reports](https://blogs.windows.com/windowsexperience/2014/06/26/sleep-study-diagnose-whats-draining-your-battery-while-the-system-sleeps/)
+
+- [powertop](https://github.com/fenrus75/powertop) - power usage realtime monitoring swiss army knife; can export reports
+- [powerstat](https://github.com/ColinIanKing/powerstat) - useful for measuring idle power usage; generates vmstat-style output and TUI histograms
+- [turbostat](https://www.linux.org/docs/man8/turbostat.html) - state/temp/clock/power info for Intel CPUs
+- [battery-stats](https://github.com/petterreinholdtsen/battery-stats) - long-term battery logging/capture
+- [batstat](https://github.com/petterreinholdtsen/battery-stats) - small C app that does continuous logging of battery info into a sqlite DB
+- [uPower](https://upower.freedesktop.org/) - D-Bus layer that stores power history/stats
+- [GNOME Power Statistics](https://www.linux.org/docs/man8/turbostat.html) - GUI that [uses uPower stats](https://askubuntu.com/questions/139202/how-can-i-reset-the-battery-statistics-for-the-powermanager)
+- [powir](https://github.com/SlapBot/powir) - Windows app, but lots of nice features
+- [SleepStudy](https://docs.microsoft.com/en-us/windows-hardware/design/device-experiences/modern-standby-sleepstudy) - Windows built-in that also [generates reports](https://blogs.windows.com/windowsexperience/2014/06/26/sleep-study-diagnose-whats-draining-your-battery-while-the-system-sleeps/)
 
 ## Other Related Python Libraries
-* [batinfo](https://github.com/nicolargo/batinfo)
-* [upower-python](https://github.com/wogscpar/upower-python)
+
+- [batinfo](https://github.com/nicolargo/batinfo)
+- [upower-python](https://github.com/wogscpar/upower-python)
 
 ## Reference
-* https://www.kernel.org/doc/Documentation/ABI/testing/sysfs-class-power
-* https://community.frame.work/t/high-battery-drain-during-suspend/3736
-* https://community.frame.work/t/high-battery-drain-during-suspend-windows-edition/4421
+
+- https://www.kernel.org/doc/Documentation/ABI/testing/sysfs-class-power
+- https://community.frame.work/t/high-battery-drain-during-suspend/3736
+- https://community.frame.work/t/high-battery-drain-during-suspend-windows-edition/4421
