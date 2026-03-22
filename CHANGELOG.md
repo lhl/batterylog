@@ -6,6 +6,18 @@ This changelog tracks user-visible changes and release validation for
 The format is loosely based on Keep a Changelog and is maintained in reverse
 chronological order.
 
+## [0.2.1] - 2026-03-22
+
+### Fixed
+
+- README command examples for managed hook administration now correctly show
+  `sudo batterylog install-hook` and `sudo batterylog uninstall-hook`.
+
+### Validation
+
+- `uv run --with build --with twine python -m build`
+- `uv run --with build --with twine python -m twine check dist/*`
+
 ## [0.2.0] - 2026-03-22
 
 ### Added
