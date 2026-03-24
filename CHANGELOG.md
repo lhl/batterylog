@@ -6,6 +6,24 @@ This changelog tracks user-visible changes and release validation for
 The format is loosely based on Keep a Changelog and is maintained in reverse
 chronological order.
 
+## [0.2.2] - 2026-03-25
+
+### Added
+
+- Secondary `mAh` and `mA` output in the default report, `history`, and
+  `summary` views to make comparison with charge-based battery tools easier.
+
+### Validation
+
+- `python3 -m py_compile batterylog.py src/batterylog/*.py tests/*.py`
+- `sh -n INSTALL.sh`
+- `sh -n batterylog.system-sleep`
+- `sqlite3 :memory: < schema.sql`
+- `pytest`
+- `python3 scripts/smoke_packaging.py`
+- `python3 -m build`
+- `uv run --with twine python -m twine check dist/*`
+
 ## [0.2.1] - 2026-03-22
 
 ### Fixed
