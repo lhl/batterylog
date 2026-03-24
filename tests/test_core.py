@@ -51,7 +51,7 @@ def insert_log_row(
             "BAT0",
             event,
             100,
-            0,
+            energy_min_wh * WH // VOLTAGE_MIN_DESIGN,
             0,
             0,
             VOLTAGE_MIN_DESIGN,
@@ -81,8 +81,9 @@ def test_report_last_cycle_uses_latest_complete_pair(tmp_path, monkeypatch, caps
 
     output = capsys.readouterr().out
     assert "Slept for 0.03 hours" in output
-    assert "Used 1.00 Wh, an average rate of 36.00 W" in output
+    assert "Used 1.00 Wh (1000.0 mAh), an average rate of 36.00 W (36000.0 mA)" in output
     assert "your battery would be empty" in output
+    assert "For your 50.00 Wh (50000.0 mAh) battery" in output
 
 
 def test_report_last_cycle_handles_missing_preceding_suspend(tmp_path, monkeypatch, capsys):
@@ -109,7 +110,7 @@ def test_report_last_cycle_handles_zero_full_capacity_metadata(tmp_path, monkeyp
 
     output = capsys.readouterr().out
     assert "Slept for 0.03 hours" in output
-    assert "Used 1.00 Wh, an average rate of 36.00 W" in output
+    assert "Used 1.00 Wh (1000.0 mAh), an average rate of 36.00 W (36000.0 mA)" in output
     assert NO_CAPACITY_MESSAGE in output
 
 
@@ -124,7 +125,7 @@ def test_report_last_cycle_uses_gain_wording_for_charging_cycle(tmp_path, monkey
     assert report_last_cycle(db_path) == 0
 
     output = capsys.readouterr().out
-    assert "Gained 1.00 Wh, an average charge rate of 36.00 W" in output
+    assert "Gained 1.00 Wh (1000.0 mAh), an average charge rate of 36.00 W (36000.0 mA)" in output
     assert "battery gain" in output
 
 
@@ -171,8 +172,9 @@ def test_report_history_shows_recent_cycles_and_power_state(tmp_path, capsys):
     assert report_history(db_path, limit=10, discharging_only=False) == 0
 
     output = capsys.readouterr().out
-    assert "Gained 1.00 Wh" in output
-    assert "Used 1.00 Wh" in output
+    assert "Gained 1.00 Wh (1000.0 mAh)" in output
+    assert "Used 1.00 Wh (1000.0 mAh)" in output
+    assert "36.00 W (36000.0 mA) avg" in output
     assert "Charging (AC online) -> Full (AC online)" in output
 
 
@@ -189,7 +191,8 @@ def test_report_summary_supports_discharging_filter(tmp_path, capsys):
     output = capsys.readouterr().out
     assert "Summary for 1 discharge cycles" in output
     assert "Charge cycles:" not in output
-    assert "Total discharge: 1.00 Wh" in output
+    assert "Total discharge: 1.00 Wh (1000.0 mAh)" in output
+    assert "Average discharge rate: 36.00 W (36000.0 mA)" in output
 
 
 def test_log_event_persists_battery_and_line_power_state(tmp_path, monkeypatch):

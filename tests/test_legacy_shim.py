@@ -93,4 +93,4 @@ def test_legacy_batterylog_py_keeps_suspend_resume_and_report_flow(tmp_path, mon
 
     output = capsys.readouterr().out
     assert "Slept for 0.03 hours" in output
-    assert "Used 1.00 Wh, an average rate of 36.00 W" in output
+    assert "Used 1.00 Wh (1000.0 mAh), an average rate of 36.00 W (36000.0 mA)" in output

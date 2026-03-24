@@ -19,6 +19,7 @@ NO_CAPACITY_MESSAGE = "Battery full-capacity metadata unavailable; skipping perc
 DEFAULT_HISTORY_LIMIT = 10
 SECONDS_PER_HOUR = Decimal(3600)
 WH_SCALE = Decimal(1_000_000_000_000)
+UAH_SCALE = Decimal(1000)
 
 
 @dataclass(frozen=True)
@@ -27,6 +28,7 @@ class CycleRecord:
     resume: Row
     duration_s: int
     energy_delta_wh: Decimal
+    charge_delta_mah: Decimal
 
     @classmethod
     def from_rows(cls, suspend: Row, resume: Row) -> "CycleRecord | None":
@@ -35,11 +37,13 @@ class CycleRecord:
             return None
 
         energy_delta_wh = Decimal(int(suspend["energy_min"]) - int(resume["energy_min"])) / WH_SCALE
+        charge_delta_mah = Decimal(int(suspend["charge_now"]) - int(resume["charge_now"])) / UAH_SCALE
         return cls(
             suspend=suspend,
             resume=resume,
             duration_s=duration_s,
             energy_delta_wh=energy_delta_wh,
+            charge_delta_mah=charge_delta_mah,
         )
 
     @property
@@ -53,6 +57,14 @@ class CycleRecord:
     @property
     def average_power_w(self) -> Decimal:
         return self.energy_abs_wh / self.duration_h
+
+    @property
+    def charge_abs_mah(self) -> Decimal:
+        return abs(self.charge_delta_mah)
+
+    @property
+    def average_current_ma(self) -> Decimal:
+        return self.charge_abs_mah / self.duration_h
 
     @property
     def is_gain(self) -> bool:
@@ -124,21 +136,22 @@ def report_last_cycle(db_path: Path) -> int:
 
     if cycle.is_gain:
         print(
-            "Gained {:.2f} Wh, an average charge rate of {:.2f} W".format(
-                cycle.energy_abs_wh,
-                cycle.average_power_w,
+            "Gained {}, an average charge rate of {}".format(
+                format_energy_and_charge(cycle.energy_abs_wh, cycle.charge_abs_mah),
+                format_power_and_current(cycle.average_power_w, cycle.average_current_ma),
             )
         )
     else:
         print(
-            "Used {:.2f} Wh, an average rate of {:.2f} W".format(
-                cycle.energy_abs_wh,
-                cycle.average_power_w,
+            "Used {}, an average rate of {}".format(
+                format_energy_and_charge(cycle.energy_abs_wh, cycle.charge_abs_mah),
+                format_power_and_current(cycle.average_power_w, cycle.average_current_ma),
             )
         )
 
     charge_full = read_charge_full(cycle.resume["name"])
     energy_full_wh = Decimal(charge_full) / WH_SCALE * Decimal(cycle.resume["voltage_min_design"])
+    charge_full_mah = Decimal(charge_full) / UAH_SCALE
     if energy_full_wh <= 0:
         print(NO_CAPACITY_MESSAGE)
         return 0
@@ -148,16 +161,16 @@ def report_last_cycle(db_path: Path) -> int:
         if cycle.average_power_w > 0 and remaining_wh > 0:
             until_full_h = remaining_wh / cycle.average_power_w
             print(
-                "At {:.2f} W charge your battery would be full in {:.2f} hours".format(
-                    cycle.average_power_w,
+                "At {} charge your battery would be full in {:.2f} hours".format(
+                    format_power_and_current(cycle.average_power_w, cycle.average_current_ma),
                     until_full_h,
                 )
             )
     elif cycle.average_power_w > 0:
         until_empty_h = Decimal(cycle.resume["energy_min"]) / WH_SCALE / cycle.average_power_w
         print(
-            "At {:.2f} W drain your battery would be empty in {:.2f} hours".format(
-                cycle.average_power_w,
+            "At {} drain your battery would be empty in {:.2f} hours".format(
+                format_power_and_current(cycle.average_power_w, cycle.average_current_ma),
                 until_empty_h,
             )
         )
@@ -165,16 +178,16 @@ def report_last_cycle(db_path: Path) -> int:
     percent_per_h = 100 * cycle.average_power_w / energy_full_wh
     if cycle.is_gain:
         print(
-            "For your {:.2f} Wh battery this is {:.2f}%/hr or {:.2f}%/day of battery gain".format(
-                energy_full_wh,
+            "For your {} battery this is {:.2f}%/hr or {:.2f}%/day of battery gain".format(
+                format_energy_and_charge(energy_full_wh, charge_full_mah),
                 percent_per_h,
                 percent_per_h * 24,
             )
         )
     else:
         print(
-            "For your {:.2f} Wh battery this is {:.2f}%/hr or {:.2f}%/day".format(
-                energy_full_wh,
+            "For your {} battery this is {:.2f}%/hr or {:.2f}%/day".format(
+                format_energy_and_charge(energy_full_wh, charge_full_mah),
                 percent_per_h,
                 percent_per_h * 24,
             )
@@ -213,10 +226,20 @@ def report_summary(db_path: Path, *, limit: int = DEFAULT_HISTORY_LIMIT, dischar
     discharge_cycles = [cycle for cycle in cycles if cycle.is_discharge]
     print("Discharge cycles: {}".format(len(discharge_cycles)))
     if discharge_cycles:
-        print("Total discharge: {:.2f} Wh".format(sum_decimal([cycle.energy_abs_wh for cycle in discharge_cycles])))
         print(
-            "Average discharge rate: {:.2f} W".format(
-                mean_decimal([cycle.average_power_w for cycle in discharge_cycles])
+            "Total discharge: {}".format(
+                format_energy_and_charge(
+                    sum_decimal([cycle.energy_abs_wh for cycle in discharge_cycles]),
+                    sum_decimal([cycle.charge_abs_mah for cycle in discharge_cycles]),
+                )
+            )
+        )
+        print(
+            "Average discharge rate: {}".format(
+                format_power_and_current(
+                    mean_decimal([cycle.average_power_w for cycle in discharge_cycles]),
+                    mean_decimal([cycle.average_current_ma for cycle in discharge_cycles]),
+                )
             )
         )
 
@@ -225,10 +248,20 @@ def report_summary(db_path: Path, *, limit: int = DEFAULT_HISTORY_LIMIT, dischar
         neutral_cycles = [cycle for cycle in cycles if not cycle.is_discharge and not cycle.is_gain]
         print("Charge cycles: {}".format(len(gain_cycles)))
         if gain_cycles:
-            print("Total gain: {:.2f} Wh".format(sum_decimal([cycle.energy_abs_wh for cycle in gain_cycles])))
             print(
-                "Average charge rate: {:.2f} W".format(
-                    mean_decimal([cycle.average_power_w for cycle in gain_cycles])
+                "Total gain: {}".format(
+                    format_energy_and_charge(
+                        sum_decimal([cycle.energy_abs_wh for cycle in gain_cycles]),
+                        sum_decimal([cycle.charge_abs_mah for cycle in gain_cycles]),
+                    )
+                )
+            )
+            print(
+                "Average charge rate: {}".format(
+                    format_power_and_current(
+                        mean_decimal([cycle.average_power_w for cycle in gain_cycles]),
+                        mean_decimal([cycle.average_current_ma for cycle in gain_cycles]),
+                    )
                 )
             )
         if neutral_cycles:
@@ -288,7 +321,8 @@ def format_cycle_history_line(cycle: CycleRecord) -> str:
     average_label = "avg charge" if cycle.is_gain else "avg"
     line = (
         f"{start} -> {end} | {cycle.duration_h:.2f} h | "
-        f"{action} {cycle.energy_abs_wh:.2f} Wh | {cycle.average_power_w:.2f} W {average_label}"
+        f"{action} {format_energy_and_charge(cycle.energy_abs_wh, cycle.charge_abs_mah)} | "
+        f"{format_power_and_current(cycle.average_power_w, cycle.average_current_ma)} {average_label}"
     )
 
     power_state = format_cycle_power_state(cycle)
@@ -320,6 +354,14 @@ def format_power_state(row: Row) -> str | None:
         return f"{battery_status} ({charger_state})"
 
     return charger_state
+
+
+def format_energy_and_charge(energy_wh: Decimal, charge_mah: Decimal) -> str:
+    return f"{energy_wh:.2f} Wh ({charge_mah:.1f} mAh)"
+
+
+def format_power_and_current(power_w: Decimal, current_ma: Decimal) -> str:
+    return f"{power_w:.2f} W ({current_ma:.1f} mA)"
 
 
 def mean_decimal(values: list[Decimal]) -> Decimal:

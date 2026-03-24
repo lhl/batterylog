@@ -121,11 +121,13 @@ You can run `/opt/batterylog/batterylog.py` without any parameters and it will c
 ```
 $ /opt/batterylog/batterylog.py
 Slept for 8.72 hours
-Used 6.10 Wh, an average rate of 0.70 W
-For your 53.67 Wh battery this is 1.30%/hr or 31.29%/day
+Used 6.10 Wh (394.1 mAh), an average rate of 0.70 W (45.2 mA)
+For your 53.67 Wh (3467.1 mAh) battery this is 1.30%/hr or 31.29%/day
 ```
 
 This script looks for the first battery at `/sys/class/power_supply/BAT*`. It has currently only been tested with a Framework laptop, and some machines may not expose every value it expects. The tool is intentionally small and CLI-first: it stores the raw suspend/resume history in sqlite and exposes a few practical reporting commands on top.
+
+Reports include secondary `mAh` and `mA` figures alongside `Wh` and `W`, which makes it easier to compare `batterylog` output against charge-based tools such as `tlp-stat -b`.
 
 The new `history` and `summary` commands cover the most common review use cases without adding a heavier UI layer.
 
